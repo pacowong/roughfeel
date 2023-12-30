@@ -168,16 +168,19 @@ pub trait Drawable<OpSetT: OpSetTrait> {
     ) -> Self;
 }
 
-pub struct RoughlyDrawable<F: Float + Trig> {
+pub struct RoughlyDrawable<OpSetT: OpSetTrait> 
+where
+    OpSetT::F: Float + Trig, 
+{
     pub shape: String,
     pub options: DrawOptions,
-    pub opsets: Vec<OpSet<F>>,
+    pub opsets: Vec<OpSetT>,
 }
 
-impl<AF: Float + Trig> Drawable<OpSet<AF>> for RoughlyDrawable<AF> {
+impl<AF: Float + Trig> Drawable<OpSet<AF>> for RoughlyDrawable<OpSet<AF>> {
     type F = AF;
 
-    fn draw(shape: String, options: DrawOptions, sets: Vec<OpSet<Self::F>>) -> RoughlyDrawable<AF> {
+    fn draw(shape: String, options: DrawOptions, sets: Vec<OpSet<AF>>) -> RoughlyDrawable<OpSet<AF>> {
         Self {
             shape: shape.into(),
             options: options.clone(),

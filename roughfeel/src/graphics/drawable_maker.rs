@@ -38,7 +38,9 @@ impl<F: Trig + Float, OpSetT: OpSetTrait<F = F>> Default for Generator<OpSetT> {
     }
 }
 
-impl<F: Trig + Float, OpSetT: OpSetTrait<F = F>> Generator<OpSetT> {
+//impl<F: Trig + Float, OpSetT: OpSetTrait<F = F>> Generator<OpSetT> 
+impl<F: Trig + Float> Generator<OpSet<F>>
+{
     pub fn new(options: DrawOptions) -> Self {
         Generator {
             default_options: options,
@@ -54,9 +56,8 @@ impl<F: Trig + Float, OpSetT: OpSetTrait<F = F>> Generator<OpSetT> {
         name: String,
         op_sets: &[OpSet<F>],
         options: &Option<DrawOptions>,
-    ) -> RoughlyDrawable<F> {
-        //RoughlyDrawable::draw(
-        RoughlyDrawable::<F>::draw(
+    ) -> RoughlyDrawable<OpSet<F>> {
+        RoughlyDrawable::<OpSet<F>>::draw(
             name.into(),
             options
                 .clone()
@@ -107,7 +108,7 @@ impl<F: Trig + Float, OpSetT: OpSetTrait<F = F>> Generator<OpSetT> {
         path
     }
 
-    pub fn to_paths(drawable: RoughlyDrawable<F>) -> Vec<PathInfo>
+    pub fn to_paths(drawable: RoughlyDrawable<OpSet<F>>) -> Vec<PathInfo>
     where
         F: Float + FromPrimitive + Trig + Display,
     {
@@ -228,7 +229,7 @@ pub trait RoughlyDrawableMaker<
 //impl<T, F: Trig + Float + FromPrimitive + MulAssign + Display> RoughlyDrawableMaker<RoughlyDrawable<F>, F> for Generator<T, F, RoughlyDrawable<F> > { //Work
 //impl<T, F: Trig + Float + FromPrimitive + MulAssign + Display, OpSetT: OpSetTrait<F = F>, OutputDrawable: Drawable<OpSetT, F = F> > RoughlyDrawableMaker<RoughlyDrawable<F>, OutputDrawable > for Generator<T, F, OutputDrawable > {
 impl<F: Trig + Float + FromPrimitive + MulAssign + Display>
-    RoughlyDrawableMaker<F, OpSet<F>, RoughlyDrawable<F>> for Generator<OpSet<F>>
+    RoughlyDrawableMaker<F, OpSet<F>, RoughlyDrawable<OpSet<F>>> for Generator<OpSet<F>>
 // <OutputDrawable as Drawable>::F: F
 {
     // fn d<T, F>(&self, name: T, op_sets: &[OpSet<F>], options: &Option<DrawOptions>) -> RoughlyDrawable<F>
@@ -245,7 +246,7 @@ impl<F: Trig + Float + FromPrimitive + MulAssign + Display>
     //     }
     // }
 
-    fn line(&self, x1: F, y1: F, x2: F, y2: F, options: &Option<DrawOptions>) -> RoughlyDrawable<F>
+    fn line(&self, x1: F, y1: F, x2: F, y2: F, options: &Option<DrawOptions>) -> RoughlyDrawable<OpSet<F>>
     where
         F: Float + Trig + FromPrimitive,
     {
@@ -272,7 +273,7 @@ impl<F: Trig + Float + FromPrimitive + MulAssign + Display>
         width: F,
         height: F,
         options: &Option<DrawOptions>,
-    ) -> RoughlyDrawable<F>
+    ) -> RoughlyDrawable<OpSet<F>>
     where
         F: Float + Trig + FromPrimitive,
     {
@@ -308,7 +309,7 @@ impl<F: Trig + Float + FromPrimitive + MulAssign + Display>
         width: F,
         height: F,
         options: &Option<DrawOptions>,
-    ) -> RoughlyDrawable<F>
+    ) -> RoughlyDrawable<OpSet<F>>
     where
         F: Float + Trig + FromPrimitive,
     {
@@ -336,7 +337,7 @@ impl<F: Trig + Float + FromPrimitive + MulAssign + Display>
         self.d("ellipse".to_owned(), &paths, &Some(options))
     }
 
-    fn circle(&self, x: F, y: F, diameter: F, options: &Option<DrawOptions>) -> RoughlyDrawable<F>
+    fn circle(&self, x: F, y: F, diameter: F, options: &Option<DrawOptions>) -> RoughlyDrawable<OpSet<F>>
     where
         F: Float + Trig + FromPrimitive,
     {
@@ -350,7 +351,7 @@ impl<F: Trig + Float + FromPrimitive + MulAssign + Display>
         points: &[Point2D<F>],
         close: bool,
         options: &Option<DrawOptions>,
-    ) -> RoughlyDrawable<F>
+    ) -> RoughlyDrawable<OpSet<F>>
     where
         F: Float + Trig + FromPrimitive,
     {
@@ -374,7 +375,7 @@ impl<F: Trig + Float + FromPrimitive + MulAssign + Display>
         stop: F,
         closed: bool,
         options: &Option<DrawOptions>,
-    ) -> RoughlyDrawable<F>
+    ) -> RoughlyDrawable<OpSet<F>>
     where
         F: Float + Trig + FromPrimitive,
     {
@@ -433,7 +434,7 @@ impl<F: Trig + Float + FromPrimitive + MulAssign + Display>
         cp: Point2D<F>,
         end: Point2D<F>,
         options: &Option<DrawOptions>,
-    ) -> RoughlyDrawable<F>
+    ) -> RoughlyDrawable<OpSet<F>>
     where
         F: Float + Trig + FromPrimitive + MulAssign + Display,
     {
@@ -475,7 +476,7 @@ impl<F: Trig + Float + FromPrimitive + MulAssign + Display>
         cp2: Point2D<F>,
         end: Point2D<F>,
         options: &Option<DrawOptions>,
-    ) -> RoughlyDrawable<F>
+    ) -> RoughlyDrawable<OpSet<F>>
     where
         F: Float + Trig + FromPrimitive + MulAssign + Display,
     {
@@ -508,7 +509,7 @@ impl<F: Trig + Float + FromPrimitive + MulAssign + Display>
         self.d("curve".to_owned(), &paths, &Some(options))
     }
 
-    fn curve(&self, points: &[Point2D<F>], options: &Option<DrawOptions>) -> RoughlyDrawable<F>
+    fn curve(&self, points: &[Point2D<F>], options: &Option<DrawOptions>) -> RoughlyDrawable<OpSet<F>>
     where
         F: Float + Trig + FromPrimitive + MulAssign + Display,
     {
@@ -540,7 +541,7 @@ impl<F: Trig + Float + FromPrimitive + MulAssign + Display>
         self.d("curve".to_owned(), &paths, &Some(options))
     }
 
-    fn polygon(&self, points: &[Point2D<F>], options: &Option<DrawOptions>) -> RoughlyDrawable<F>
+    fn polygon(&self, points: &[Point2D<F>], options: &Option<DrawOptions>) -> RoughlyDrawable<OpSet<F>>
     where
         F: Float + Trig + FromPrimitive + MulAssign + Display,
     {
@@ -565,7 +566,7 @@ impl<F: Trig + Float + FromPrimitive + MulAssign + Display>
         self.d("polygon".to_owned(), &paths, &Some(options))
     }
 
-    fn path(&self, d: String, options: &Option<DrawOptions>) -> RoughlyDrawable<F>
+    fn path(&self, d: String, options: &Option<DrawOptions>) -> RoughlyDrawable<OpSet<F>>
     where
         F: Float + Trig + FromPrimitive + MulAssign + Display,
     {

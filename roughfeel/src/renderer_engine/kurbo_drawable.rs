@@ -248,7 +248,7 @@ pub trait ToKurboDrawable<F: Float + Trig> {
     fn to_kurbo_drawable(self) -> KurboDrawable<F>;
 }
 
-impl<F: Float + Trig + FromPrimitive> ToKurboDrawable<F> for RoughlyDrawable<F> {
+impl<F: Float + Trig + FromPrimitive> ToKurboDrawable<F> for RoughlyDrawable<OpSet<F>> {
     fn to_kurbo_drawable(self) -> KurboDrawable<F> {
         KurboDrawable {
             shape: self.shape,
