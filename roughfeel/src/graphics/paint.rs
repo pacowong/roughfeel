@@ -28,6 +28,8 @@ impl LineJoin {
 }
 impl Default for LineJoin {
     fn default() -> Self {
-        LineJoin::Miter { limit: LineJoin::DEFAULT_MITER_LIMIT }
+        LineJoin::Miter {
+            limit: LineJoin::DEFAULT_MITER_LIMIT,
+        }
     }
 }

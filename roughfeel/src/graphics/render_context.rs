@@ -3,11 +3,11 @@ use std::ops::MulAssign;
 
 use num_traits::{Float, FromPrimitive};
 
-use euclid::{Trig, default::Point2D};
+use euclid::{default::Point2D, Trig};
 
-use super::drawable_ops::{OpSet};
+use super::drawable_ops::OpSet;
 
-use super::drawable::{Drawable, DrawOptions};
+use super::drawable::{DrawOptions, Drawable};
 use super::renderer;
 
 /*
@@ -53,71 +53,26 @@ impl RoughRenderContext {
 }
 */
 
-pub trait RoughlyCanvas<F: Trig + Float + FromPrimitive + MulAssign + Display, D: Drawable<OpSet<F> > > {
-    fn draw_line(
-        &self,
-        x1: F,
-        y1: F,
-        x2: F,
-        y2: F,
-        options: DrawOptions
-    );
+pub trait RoughlyCanvas<
+    F: Trig + Float + FromPrimitive + MulAssign + Display,
+    D: Drawable<OpSet<F>>,
+>
+{
+    fn draw_line(&self, x1: F, y1: F, x2: F, y2: F, options: DrawOptions);
 
-    fn draw_rectangle(
-        &self,
-        x: F,
-        y: F,
-        width: F,
-        height: F,
-        options: DrawOptions
-    );
+    fn draw_rectangle(&self, x: F, y: F, width: F, height: F, options: DrawOptions);
 
-    fn draw_ellipse(
-        &self,
-        x: F,
-        y: F,
-        width: F,
-        height: F,
-        options: DrawOptions
-    );
+    fn draw_ellipse(&self, x: F, y: F, width: F, height: F, options: DrawOptions);
 
-    fn draw_circle(
-        &self,
-        x: F,
-        y: F,
-        diameter: F,
-        options: DrawOptions
-    );
+    fn draw_circle(&self, x: F, y: F, diameter: F, options: DrawOptions);
 
-    fn draw_linear_path(
-        &self,
-        points: &[Point2D<F>],
-        close: bool,
-        options: DrawOptions
-    );
+    fn draw_linear_path(&self, points: &[Point2D<F>], close: bool, options: DrawOptions);
 
-    fn draw_polygon(
-        &self,
-        points: &[Point2D<F>],
-    );
+    fn draw_polygon(&self, points: &[Point2D<F>]);
 
-    fn draw_arc(
-        &self,
-        x: F,
-        y: F,
-        width: F,
-        height: F,
-        start: F,
-        stop: F,
-        closed: bool,
-    );
+    fn draw_arc(&self, x: F, y: F, width: F, height: F, start: F, stop: F, closed: bool);
 
-    fn draw_bezier_quadratic(
-        &self,
-        start: Point2D<F>,
-        cp: Point2D<F>,
-        end: Point2D<F>,
-    );
+    fn draw_bezier_quadratic(&self, start: Point2D<F>, cp: Point2D<F>, end: Point2D<F>);
 
     fn draw_bezier_cubic(
         &self,
@@ -127,13 +82,7 @@ pub trait RoughlyCanvas<F: Trig + Float + FromPrimitive + MulAssign + Display, D
         end: Point2D<F>,
     );
 
-    fn draw_curve(
-        &self,
-        points: &[Point2D<F>],
-    );
+    fn draw_curve(&self, points: &[Point2D<F>]);
 
-    fn draw_path(
-        &self,
-        svg_path: String,
-    );
+    fn draw_path(&self, svg_path: String);
 }

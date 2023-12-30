@@ -28,7 +28,10 @@ pub struct BezierCubic<F: Float + Trig> {
 
 impl<F: Float + Trig> Line<F> {
     pub fn from(points: &[Point2D<F>]) -> Self {
-        Line { start_point: points[0], end_point: points[1] }
+        Line {
+            start_point: points[0],
+            end_point: points[1],
+        }
     }
     pub fn as_points(&self) -> Vec<Point2D<F>> {
         return vec![self.start_point, self.end_point];

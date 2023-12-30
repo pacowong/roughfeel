@@ -1,12 +1,15 @@
 use derive_builder::Builder;
+use rand::{random, Rng, SeedableRng};
 use rand_chacha::{ChaCha8Core, ChaCha8Rng};
-use rand::{Rng, SeedableRng, random};
 // use rand_core::RngCore;
 use euclid::Trig;
-use num_traits::{Float};
+use num_traits::Float;
 use palette::Srgba;
 
-use super::{paint::{LineCap, LineJoin, FillStyle}, drawable_ops::OpSet};
+use super::{
+    drawable_ops::OpSet,
+    paint::{FillStyle, LineCap, LineJoin},
+};
 
 pub struct PathInfo {
     pub d: String,
@@ -124,14 +127,14 @@ impl DrawOptions {
                     self.randomizer = Some(ChaCha8Rng::seed_from_u64(s));
                     match &mut self.randomizer {
                         Some(r1) => r1.gen(),
-                        None => 0.0
+                        None => 0.0,
                     }
                 }
                 None => {
                     self.randomizer = Some(ChaCha8Rng::seed_from_u64(random()));
                     match &mut self.randomizer {
                         Some(r1) => r1.gen(),
-                        None => 0.0
+                        None => 0.0,
                     }
                 }
             },
@@ -161,28 +164,25 @@ pub trait Drawable<OpSetT: OpSetTrait> {
         shape: String,
         options: DrawOptions,
         //sets: Vec<OpSet<Self::F>>) -> Self;
-        sets: Vec<OpSetT>) -> Self;
+        sets: Vec<OpSetT>,
+    ) -> Self;
 }
 
 pub struct RoughlyDrawable<F: Float + Trig> {
     pub shape: String,
     pub options: DrawOptions,
-    pub opsets: Vec<OpSet<F> >,
+    pub opsets: Vec<OpSet<F>>,
 }
 
-impl<AF: Float + Trig> Drawable<OpSet<AF> > for RoughlyDrawable<AF> {
+impl<AF: Float + Trig> Drawable<OpSet<AF>> for RoughlyDrawable<AF> {
     type F = AF;
 
-    fn draw(
-        shape: String,
-        options: DrawOptions,
-        sets: Vec<OpSet<Self::F>>) -> RoughlyDrawable<AF> {
-            Self {
-                shape: shape.into(),
-                options: options
-                    .clone(),
-                    // .unwrap_or_else(|| self.default_options.clone()),
-                opsets: Vec::from_iter(sets.iter().cloned()),
-            }
+    fn draw(shape: String, options: DrawOptions, sets: Vec<OpSet<Self::F>>) -> RoughlyDrawable<AF> {
+        Self {
+            shape: shape.into(),
+            options: options.clone(),
+            // .unwrap_or_else(|| self.default_options.clone()),
+            opsets: Vec::from_iter(sets.iter().cloned()),
         }
+    }
 }

@@ -7,9 +7,9 @@ use num_traits::{Float, FromPrimitive};
 
 use super::scan_line_hachure::polygon_hachure_lines;
 use super::traits::PatternFiller;
-use crate::graphics::drawable_ops::{OpSet};
+use crate::graphics::_c;
 use crate::graphics::drawable::DrawOptions;
-use crate::graphics::{_c};
+use crate::graphics::drawable_ops::OpSet;
 use crate::graphics::geometry::Line;
 use crate::graphics::renderer::_double_line;
 
@@ -22,7 +22,11 @@ where
     F: Float + Trig + FromPrimitive,
     P: BorrowMut<Vec<Vec<Point2D<F>>>>,
 {
-    fn fill_polygons(&self, mut polygon_list: P, o: &mut DrawOptions) -> crate::graphics::drawable_ops::OpSet<F> {
+    fn fill_polygons(
+        &self,
+        mut polygon_list: P,
+        o: &mut DrawOptions,
+    ) -> crate::graphics::drawable_ops::OpSet<F> {
         let lines = polygon_hachure_lines(polygon_list.borrow_mut(), o);
         let ops = DashedFiller::dashed_line(lines, o);
         OpSet {
@@ -35,10 +39,15 @@ where
 }
 impl<'a, F: Float + Trig + FromPrimitive> DashedFiller<F> {
     pub fn new() -> Self {
-        DashedFiller { _phantom: PhantomData }
+        DashedFiller {
+            _phantom: PhantomData,
+        }
     }
 
-    fn dashed_line(lines: Vec<Line<F>>, o: &mut DrawOptions) -> Vec<crate::graphics::drawable_ops::Op<F>> {
+    fn dashed_line(
+        lines: Vec<Line<F>>,
+        o: &mut DrawOptions,
+    ) -> Vec<crate::graphics::drawable_ops::Op<F>> {
         let dash_offset: F = o.dash_offset.map(_c).unwrap_or_else(|| _c(-1.0));
         let offset = if dash_offset < _c(0.0) {
             let hachure_gap: F = o.hachure_gap.map(_c).unwrap_or_else(|| _c(-1.0));

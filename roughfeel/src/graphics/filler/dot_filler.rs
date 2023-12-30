@@ -9,10 +9,10 @@ use super::scan_line_hachure::polygon_hachure_lines;
 use crate::graphics::renderer::ellipse;
 
 use super::traits::PatternFiller;
-use crate::graphics::drawable_ops::{OpSet, OpSetType, Op};
-use crate::graphics::drawable::{DrawOptions};
-use crate::graphics::{_c, _cc};
+use crate::graphics::drawable::DrawOptions;
+use crate::graphics::drawable_ops::{Op, OpSet, OpSetType};
 use crate::graphics::geometry::{rotate_lines, rotate_points, Line};
+use crate::graphics::{_c, _cc};
 
 pub struct DotFiller<F> {
     _phantom: PhantomData<F>,
@@ -37,7 +37,9 @@ where
 }
 impl<F: Float + Trig + FromPrimitive> DotFiller<F> {
     pub fn new() -> Self {
-        DotFiller { _phantom: PhantomData }
+        DotFiller {
+            _phantom: PhantomData,
+        }
     }
 
     fn dots_on_line(lines: Vec<Line<F>>, o: &mut DrawOptions) -> Vec<Op<F>> {

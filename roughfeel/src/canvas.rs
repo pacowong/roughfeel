@@ -1,45 +1,30 @@
 use derive_builder::Builder;
-use rand_chacha::{rand_core::block::BlockRngCore, ChaCha8Core};
 use euclid::default::Point2D;
 use euclid::Trig;
 use num_traits::{Float, FromPrimitive};
 use palette::Srgba;
+use rand_chacha::{rand_core::block::BlockRngCore, ChaCha8Core};
 
 use crate::graphics::drawable::DrawOptions;
 
-use crate::graphics::drawable_ops::{
-    OpSet,
-    OpSetType,
-    OpType,
-    };
-
-
-
-
-
+use crate::graphics::drawable_ops::{OpSet, OpSetType, OpType};
 
 pub struct Drawable2D<F: Float + Trig> {
     pub shape: String,
     pub options: DrawOptions,
-    pub opsets: Vec<OpSet<F> >,
+    pub opsets: Vec<OpSet<F>>,
 }
 
-pub struct RoughCanvasDrawer {
+pub struct RoughCanvasDrawer {}
 
-}
+pub struct Canvas2D {}
 
-pub struct Canvas2D {
-
-}
-
-pub struct Canvas2DContext {
-
-}
+pub struct Canvas2DContext {}
 
 pub struct RoughCanvas {
     drawer: RoughCanvasDrawer,
     canvas: Canvas2D,
-    ctx: Canvas2DContext
+    ctx: Canvas2DContext,
 }
 
 // impl RoughCanvas {

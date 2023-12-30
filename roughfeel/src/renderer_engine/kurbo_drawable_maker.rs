@@ -1,48 +1,54 @@
-use std::{ops::MulAssign, fmt::Display};
+use std::{fmt::Display, ops::MulAssign};
 
 use num_traits::{Float, FromPrimitive};
 
-use euclid::{Trig, default::Point2D};
+use euclid::{default::Point2D, Trig};
 
-use crate::graphics::{drawable_maker::{RoughlyDrawableMaker, Generator}, drawable::{DrawOptions, Drawable, RoughlyDrawable}, drawable_ops::OpSet};
+use crate::graphics::{
+    drawable::{DrawOptions, Drawable, RoughlyDrawable},
+    drawable_maker::{Generator, RoughlyDrawableMaker},
+    drawable_ops::OpSet,
+};
 
 use super::kurbo_drawable::{KurboDrawable, KurboOpSet, ToKurboDrawable};
 
 use std::marker::PhantomData;
 
 #[derive(Default)]
-pub struct KurboDrawableMaker<T, F: Trig + Float + FromPrimitive + MulAssign + Display, OutputDrawable: Drawable<KurboOpSet<F> > > {
+pub struct KurboDrawableMaker<
+    F: Trig + Float + FromPrimitive + MulAssign + Display,
+    OutputDrawable: Drawable<KurboOpSet<F>>,
+> {
     //gen: Generator<T, F, OutputDrawable>, //RoughlyDrawableMaker<RoughlyDrawable<F>, F> >,
-    gen: Generator<T, F, OpSet<F>>,
+    gen: Generator<F, OpSet<F>>,
     options: Option<DrawOptions>,
-    phantom_data_t: PhantomData<T>,
     phantom_data_f: PhantomData<F>,
     phantom_data_output_drawable: PhantomData<OutputDrawable>,
 }
 
-impl<T, F: Float + Trig + FromPrimitive + MulAssign + Display, OutputDrawable: Drawable<KurboOpSet<F> > > KurboDrawableMaker<T, F, OutputDrawable> {
-    pub fn new(gen: Generator<T, F, OpSet<F>>, options: Option<DrawOptions>) -> Self {
+impl<F: Float + Trig + FromPrimitive + MulAssign + Display,
+        OutputDrawable: Drawable<KurboOpSet<F>>,
+    > KurboDrawableMaker<F, OutputDrawable>
+{
+    pub fn new(gen: Generator<F, OpSet<F>>, options: Option<DrawOptions>) -> Self {
         Self {
             gen,
             options,
-            phantom_data_t: PhantomData,
             phantom_data_f: PhantomData,
             phantom_data_output_drawable: PhantomData,
         }
     }
 }
 
-// impl<T, F: Trig + Float + FromPrimitive + MulAssign + Display> RoughlyDrawableMaker<RoughlyDrawable<F>, F> for Generator<T, F, RoughlyDrawable<F> > 
+// impl<T, F: Trig + Float + FromPrimitive + MulAssign + Display> RoughlyDrawableMaker<RoughlyDrawable<F>, F> for Generator<T, F, RoughlyDrawable<F> >
 //impl<T, F: Trig + Float + FromPrimitive + MulAssign + Display, OutputDrawable: Drawable> RoughlyDrawableMaker<RoughlyDrawable<F>, F> for Generator<T, F, OutputDrawable>
-impl<T, F: Float + Trig + FromPrimitive + MulAssign + Display, OutputDrawable: Drawable<KurboOpSet<F> > > RoughlyDrawableMaker<F, KurboOpSet<F>, KurboDrawable<F> > for KurboDrawableMaker<T, F, OutputDrawable> {
-    fn line(
-        &self,
-        x1: F,
-        y1: F,
-        x2: F,
-        y2: F,
-        options: &Option<DrawOptions>,
-    ) -> KurboDrawable<F> {
+impl<
+        F: Float + Trig + FromPrimitive + MulAssign + Display,
+        OutputDrawable: Drawable<KurboOpSet<F>>,
+    > RoughlyDrawableMaker<F, KurboOpSet<F>, KurboDrawable<F>>
+    for KurboDrawableMaker<F, OutputDrawable>
+{
+    fn line(&self, x1: F, y1: F, x2: F, y2: F, options: &Option<DrawOptions>) -> KurboDrawable<F> {
         let drawable = self.gen.line(x1, y1, x2, y2, &self.options);
         drawable.to_kurbo_drawable()
     }
@@ -71,13 +77,7 @@ impl<T, F: Float + Trig + FromPrimitive + MulAssign + Display, OutputDrawable: D
         drawable.to_kurbo_drawable()
     }
 
-    fn circle(
-        &self,
-        x: F,
-        y: F,
-        diameter: F,
-        options: &Option<DrawOptions>,
-    ) -> KurboDrawable<F> {
+    fn circle(&self, x: F, y: F, diameter: F, options: &Option<DrawOptions>) -> KurboDrawable<F> {
         let drawable = self.gen.circle(x, y, diameter, &self.options);
         drawable.to_kurbo_drawable()
     }
@@ -92,11 +92,7 @@ impl<T, F: Float + Trig + FromPrimitive + MulAssign + Display, OutputDrawable: D
         drawable.to_kurbo_drawable()
     }
 
-    fn polygon(
-        &self,
-        points: &[Point2D<F>],
-        options: &Option<DrawOptions>,
-    ) -> KurboDrawable<F> {
+    fn polygon(&self, points: &[Point2D<F>], options: &Option<DrawOptions>) -> KurboDrawable<F> {
         let drawable = self.gen.polygon(points, &self.options);
         drawable.to_kurbo_drawable()
     }
@@ -141,20 +137,12 @@ impl<T, F: Float + Trig + FromPrimitive + MulAssign + Display, OutputDrawable: D
         drawable.to_kurbo_drawable()
     }
 
-    fn curve(
-        &self,
-        points: &[Point2D<F>],
-        options: &Option<DrawOptions>,
-    ) -> KurboDrawable<F> {
+    fn curve(&self, points: &[Point2D<F>], options: &Option<DrawOptions>) -> KurboDrawable<F> {
         let drawable = self.gen.curve(points, &self.options);
         drawable.to_kurbo_drawable()
     }
 
-    fn path(
-        &self,
-        svg_path: String,
-        options: &Option<DrawOptions>,
-    ) -> KurboDrawable<F> {
+    fn path(&self, svg_path: String, options: &Option<DrawOptions>) -> KurboDrawable<F> {
         let drawable = self.gen.path(svg_path, &self.options);
         drawable.to_kurbo_drawable()
     }

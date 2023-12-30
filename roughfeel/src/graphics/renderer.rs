@@ -7,20 +7,15 @@ use num_traits::{Float, FloatConst, FromPrimitive};
 use svg_path_ops::{absolutize, normalize};
 use svgtypes::{PathParser, PathSegment};
 
-use super::drawable::{DrawOptions};
+use super::drawable::DrawOptions;
 use super::{_c, _cc};
-use crate::graphics::paint::{FillStyle};
 use crate::graphics::drawable_ops::{Op, OpSet, OpSetType, OpType};
 use crate::graphics::filler::get_filler;
 use crate::graphics::filler::FillerType::{
-    DashedFiller,
-    DotFiller,
-    HatchFiller,
-    ScanLineHachure,
-    ZigZagFiller,
-    ZigZagLineFiller,
+    DashedFiller, DotFiller, HatchFiller, ScanLineHachure, ZigZagFiller, ZigZagLineFiller,
 };
 use crate::graphics::geometry::{convert_bezier_quadratic_to_cubic, BezierQuadratic};
+use crate::graphics::paint::FillStyle;
 
 #[derive(PartialEq, Eq, Debug)]
 pub struct EllipseParams<F: Float> {
@@ -303,7 +298,10 @@ pub fn bezier_cubic<F: Float + Trig + FromPrimitive>(
     }
 }
 
-pub fn curve<F: Float + Trig + FromPrimitive>(points: &[Point2D<F>], o: &mut DrawOptions) -> OpSet<F> {
+pub fn curve<F: Float + Trig + FromPrimitive>(
+    points: &[Point2D<F>],
+    o: &mut DrawOptions,
+) -> OpSet<F> {
     let mut o1 = _curve_with_offset(
         points,
         _c::<F>(1.0) * _c(1.0 + o.roughness.unwrap_or(0.0) * 0.2),
@@ -466,7 +464,10 @@ pub fn arc<F: Float + Trig + FromPrimitive>(
                 false,
             ));
         } else {
-            ops.push(Op { op: OpType::LineTo, data: vec![cx, cy] });
+            ops.push(Op {
+                op: OpType::LineTo,
+                data: vec![cx, cy],
+            });
             ops.push(Op {
                 op: OpType::LineTo,
                 data: vec![cx + rx * Float::cos(strt), cy + ry * Float::sin(strt)],
@@ -1011,7 +1012,10 @@ fn _bezier_to<F: Float + Trig + FromPrimitive>(
     let mut i = 0;
     while i < iterations {
         if i == 0 {
-            ops.push(Op { op: OpType::Move, data: vec![current.x, current.y] });
+            ops.push(Op {
+                op: OpType::Move,
+                data: vec![current.x, current.y],
+            });
         } else {
             ops.push(Op {
                 op: OpType::Move,
@@ -1175,7 +1179,15 @@ where
                 ));
                 current = Point2D::new(_cc::<F>(x), _cc::<F>(y));
             }
-            PathSegment::CurveTo { abs: true, x1, y1, x2, y2, x, y } => {
+            PathSegment::CurveTo {
+                abs: true,
+                x1,
+                y1,
+                x2,
+                y2,
+                x,
+                y,
+            } => {
                 ops.extend(_bezier_to(
                     _cc::<F>(x1),
                     _cc::<F>(y1),
@@ -1214,8 +1226,8 @@ mod test {
     use plotlib::view::ContinuousView;
 
     use super::{EllipseParams, _compute_ellipse_points, _curve};
-    use crate::graphics::drawable_ops::{Op, OpSet, OpSetType, OpType};
     use crate::graphics::drawable::{DrawOptions, DrawOptionsBuilder};
+    use crate::graphics::drawable_ops::{Op, OpSet, OpSetType, OpType};
 
     fn get_default_options() -> DrawOptions {
         DrawOptionsBuilder::default()

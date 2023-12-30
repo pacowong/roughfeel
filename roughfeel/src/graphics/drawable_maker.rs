@@ -7,70 +7,57 @@ use euclid::Trig;
 use num_traits::{Float, FromPrimitive};
 use points_on_curve::{curve_to_bezier, points_on_bezier_curves};
 
-use crate::graphics::drawable::{Drawable, DrawOptions,
-    DrawOptionsBuilder,PathInfo};
-use crate::graphics::paint::FillStyle;
-use crate::graphics::drawable_ops::{
-    OpSet,
-    OpSetType,
-    OpType,
-};
 use crate::graphics::_c;
+use crate::graphics::drawable::{DrawOptions, DrawOptionsBuilder, Drawable, PathInfo};
+use crate::graphics::drawable_ops::{OpSet, OpSetType, OpType};
 use crate::graphics::geometry::{convert_bezier_quadratic_to_cubic, BezierQuadratic};
+use crate::graphics::paint::FillStyle;
 use crate::graphics::points_on_path::points_on_path;
 use crate::graphics::renderer::{
-    bezier_cubic,
-    bezier_quadratic,
-    curve,
-    ellipse_with_params,
-    generate_ellipse_params,
-    line,
-    linear_path,
-    pattern_fill_arc,
-    pattern_fill_polygons,
-    rectangle,
-    solid_fill_polygon,
-    svg_path,
+    bezier_cubic, bezier_quadratic, curve, ellipse_with_params, generate_ellipse_params, line,
+    linear_path, pattern_fill_arc, pattern_fill_polygons, rectangle, solid_fill_polygon, svg_path,
 };
 
-use super::drawable::{RoughlyDrawable, OpSetTrait};
+use super::drawable::{OpSetTrait, RoughlyDrawable};
 use super::render_context::RoughlyCanvas;
 
-pub struct Generator<T, F: Trig + Float, OpSetT: OpSetTrait<F=F> > {
+pub struct Generator<F: Trig + Float, OpSetT: OpSetTrait<F = F>> {
     default_options: DrawOptions,
-    phantom_data_t: PhantomData<T>,
     phantom_data_f: PhantomData<F>,
     phantom_data_opsett: PhantomData<OpSetT>,
-    // phantom_data_output_drawable: PhantomData<OutputDrawable>,
 }
 
-impl<T, F: Trig + Float, OpSetT: OpSetTrait<F=F>> Default for Generator<T, F, OpSetT> {
+impl<F: Trig + Float, OpSetT: OpSetTrait<F = F>> Default for Generator<F, OpSetT> {
     fn default() -> Self {
         Self {
             default_options: DrawOptionsBuilder::default()
                 .seed(345_u64)
                 .build()
                 .expect("failed to build default options"),
-            phantom_data_t: PhantomData,
             phantom_data_f: PhantomData,
-            // phantom_data_output_drawable: PhantomData,
             phantom_data_opsett: PhantomData,
         }
     }
 }
 
-// RoughlyDrawable<F>
-//impl<T, F: Trig + Float> Generator<T, F, RoughlyDrawable<F>> { //Work
-impl<T, F: Trig + Float, OpSetT: OpSetTrait<F=F> > Generator<T, F, OpSetT> {
+impl<F: Trig + Float, OpSetT: OpSetTrait<F = F>> Generator<F, OpSetT> {
     pub fn new(options: DrawOptions) -> Self {
-        Generator { default_options: options, phantom_data_t: PhantomData, phantom_data_f: PhantomData, phantom_data_opsett: PhantomData }
+        Generator {
+            default_options: options,
+            phantom_data_f: PhantomData,
+            phantom_data_opsett: PhantomData,
+        }
     }
 
     // fn d(&self, name: T, op_sets: &[OpSet<F>], options: &Option<DrawOptions>) -> RoughlyDrawable<F>
     // where
     //     T: Into<String>,
-    fn d(&self, name: String, op_sets: &[OpSet<F>], options: &Option<DrawOptions>) -> RoughlyDrawable<F>
-    {
+    fn d(
+        &self,
+        name: String,
+        op_sets: &[OpSet<F>],
+        options: &Option<DrawOptions>,
+    ) -> RoughlyDrawable<F> {
         //RoughlyDrawable::draw(
         RoughlyDrawable::<F>::draw(
             name.into(),
@@ -80,7 +67,6 @@ impl<T, F: Trig + Float, OpSetT: OpSetTrait<F=F> > Generator<T, F, OpSetT> {
             Vec::from_iter(op_sets.iter().cloned()),
         )
     }
-
 
     pub fn ops_to_path(mut drawing: OpSet<F>, fixed_decimals: Option<u32>) -> String
     where
@@ -165,24 +151,19 @@ impl<T, F: Trig + Float, OpSetT: OpSetTrait<F=F> > Generator<T, F, OpSetT> {
     }
 }
 
-pub trait RoughlyDrawableMaker<F: Trig + Float + FromPrimitive + MulAssign + Display, OpSetT, OutputDrawable >
-where
+pub trait RoughlyDrawableMaker<
+    F: Trig + Float + FromPrimitive + MulAssign + Display,
+    OpSetT,
+    OutputDrawable,
+> where
     //OutputDrawable: Drawable<OpSet<F> >, //Not OK, only one kind of opset
-    OpSetT: OpSetTrait<F=F>,
-    OutputDrawable: Drawable<OpSetT >
-    //<OutputDrawable as Drawable>::F: OpSetTrait
+    OpSetT: OpSetTrait<F = F>,
+    OutputDrawable: Drawable<OpSetT>,
 {
     // This trait contains all primitive shapes
     // type OutputDrawable: Drawable<OpSetT: OpSetTrait, F=F>;
 
-    fn line(
-        &self,
-        x1: F,
-        y1: F,
-        x2: F,
-        y2: F,
-        options: &Option<DrawOptions>
-    ) -> OutputDrawable;
+    fn line(&self, x1: F, y1: F, x2: F, y2: F, options: &Option<DrawOptions>) -> OutputDrawable;
 
     fn rectangle(
         &self,
@@ -190,7 +171,7 @@ where
         y: F,
         width: F,
         height: F,
-        options: &Option<DrawOptions>
+        options: &Option<DrawOptions>,
     ) -> OutputDrawable;
 
     fn ellipse(
@@ -199,29 +180,19 @@ where
         y: F,
         width: F,
         height: F,
-        options: &Option<DrawOptions>
+        options: &Option<DrawOptions>,
     ) -> OutputDrawable;
 
-    fn circle(
-        &self,
-        x: F,
-        y: F,
-        diameter: F,
-        options: &Option<DrawOptions>
-    ) -> OutputDrawable;
+    fn circle(&self, x: F, y: F, diameter: F, options: &Option<DrawOptions>) -> OutputDrawable;
 
     fn linear_path(
         &self,
         points: &[Point2D<F>],
         close: bool,
-        options: &Option<DrawOptions>
-    ) -> OutputDrawable;
-
-    fn polygon(
-        &self,
-        points: &[Point2D<F>],
         options: &Option<DrawOptions>,
     ) -> OutputDrawable;
+
+    fn polygon(&self, points: &[Point2D<F>], options: &Option<DrawOptions>) -> OutputDrawable;
 
     fn arc(
         &self,
@@ -252,23 +223,16 @@ where
         options: &Option<DrawOptions>,
     ) -> OutputDrawable;
 
-    fn curve(
-        &self,
-        points: &[Point2D<F>],
-        options: &Option<DrawOptions>,
-    ) -> OutputDrawable;
+    fn curve(&self, points: &[Point2D<F>], options: &Option<DrawOptions>) -> OutputDrawable;
 
-    fn path(
-        &self,
-        svg_path: String,
-        options: &Option<DrawOptions>,
-    ) -> OutputDrawable;
+    fn path(&self, svg_path: String, options: &Option<DrawOptions>) -> OutputDrawable;
 }
 
 //impl<T, F: Trig + Float + FromPrimitive + MulAssign + Display> RoughlyDrawableMaker<RoughlyDrawable<F>, F> for Generator<T, F, RoughlyDrawable<F> > { //Work
 //impl<T, F: Trig + Float + FromPrimitive + MulAssign + Display, OpSetT: OpSetTrait<F = F>, OutputDrawable: Drawable<OpSetT, F = F> > RoughlyDrawableMaker<RoughlyDrawable<F>, OutputDrawable > for Generator<T, F, OutputDrawable > {
-impl<T, F: Trig + Float + FromPrimitive + MulAssign + Display> RoughlyDrawableMaker<F, OpSet<F>, RoughlyDrawable<F> > for Generator<T, F, OpSet<F>>
-    // <OutputDrawable as Drawable>::F: F
+impl<F: Trig + Float + FromPrimitive + MulAssign + Display>
+    RoughlyDrawableMaker<F, OpSet<F>, RoughlyDrawable<F>> for Generator<F, OpSet<F>>
+// <OutputDrawable as Drawable>::F: F
 {
     // fn d<T, F>(&self, name: T, op_sets: &[OpSet<F>], options: &Option<DrawOptions>) -> RoughlyDrawable<F>
     // where
@@ -283,7 +247,6 @@ impl<T, F: Trig + Float + FromPrimitive + MulAssign + Display> RoughlyDrawableMa
     //         sets: Vec::from_iter(op_sets.iter().cloned()),
     //     }
     // }
-
 
     fn line(&self, x1: F, y1: F, x2: F, y2: F, options: &Option<DrawOptions>) -> RoughlyDrawable<F>
     where
@@ -422,8 +385,17 @@ impl<T, F: Trig + Float + FromPrimitive + MulAssign + Display> RoughlyDrawableMa
             .clone()
             .unwrap_or_else(|| self.default_options.clone());
         let mut paths = vec![];
-        let outline =
-            crate::graphics::renderer::arc(x, y, width, height, start, stop, closed, true, &mut options);
+        let outline = crate::graphics::renderer::arc(
+            x,
+            y,
+            width,
+            height,
+            start,
+            stop,
+            closed,
+            true,
+            &mut options,
+        );
         if closed && options.fill.is_some() {
             if options.fill_style == Some(FillStyle::Solid) {
                 options.disable_multi_stroke = Some(true);

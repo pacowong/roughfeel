@@ -8,9 +8,9 @@ use num_traits::{Float, FloatConst, FromPrimitive};
 use super::scan_line_hachure::polygon_hachure_lines;
 use super::traits::PatternFiller;
 
-use crate::graphics::drawable_ops::{OpSet, OpSetType, Op};
-use crate::graphics::drawable::{DrawOptions};
-use crate::graphics::{_c};
+use crate::graphics::_c;
+use crate::graphics::drawable::DrawOptions;
+use crate::graphics::drawable_ops::{Op, OpSet, OpSetType};
 use crate::graphics::geometry::{rotate_lines, rotate_points, Line};
 
 use crate::graphics::renderer::_double_line;
@@ -51,7 +51,9 @@ where
 
 impl<F: Float + Trig + FromPrimitive> ZigZagLineFiller<F> {
     pub fn new() -> Self {
-        ZigZagLineFiller { _phantom: PhantomData }
+        ZigZagLineFiller {
+            _phantom: PhantomData,
+        }
     }
 
     fn zig_zag_lines(lines: &[Line<F>], zig_zag_offset: F, o: &mut DrawOptions) -> Vec<Op<F>> {

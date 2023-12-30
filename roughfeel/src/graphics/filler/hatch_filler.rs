@@ -7,9 +7,9 @@ use num_traits::{Float, FromPrimitive};
 
 use super::scan_line_hachure::ScanlineHachureFiller;
 use super::traits::PatternFiller;
-use crate::graphics::drawable_ops::{OpSet};
-use crate::graphics::drawable::{DrawOptions};
-use crate::graphics::{_c};
+use crate::graphics::_c;
+use crate::graphics::drawable::DrawOptions;
+use crate::graphics::drawable_ops::OpSet;
 
 pub struct HatchFiller<F> {
     _phantom: PhantomData<F>,

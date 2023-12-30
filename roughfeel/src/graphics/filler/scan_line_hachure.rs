@@ -7,9 +7,9 @@ use euclid::Trig;
 use num_traits::{Float, FromPrimitive};
 
 use super::traits::PatternFiller;
-use crate::graphics::drawable_ops::{OpSet};
-use crate::graphics::drawable::{DrawOptions};
-use crate::graphics::{_c};
+use crate::graphics::_c;
+use crate::graphics::drawable::DrawOptions;
+use crate::graphics::drawable_ops::OpSet;
 use crate::graphics::geometry::{rotate_lines, rotate_points, Line};
 
 #[derive(Clone)]
@@ -214,7 +214,11 @@ where
     F: Float + Trig + FromPrimitive,
     P: BorrowMut<Vec<Vec<Point2D<F>>>>,
 {
-    fn fill_polygons(&self, mut polygon_list: P, o: &mut DrawOptions) -> crate::graphics::drawable_ops::OpSet<F> {
+    fn fill_polygons(
+        &self,
+        mut polygon_list: P,
+        o: &mut DrawOptions,
+    ) -> crate::graphics::drawable_ops::OpSet<F> {
         let lines = polygon_hachure_lines(polygon_list.borrow_mut(), o);
         let ops = ScanlineHachureFiller::render_lines(lines, o);
         OpSet {
@@ -228,10 +232,15 @@ where
 
 impl<F: Float + Trig + FromPrimitive> ScanlineHachureFiller<F> {
     pub fn new() -> Self {
-        ScanlineHachureFiller { _phantom: PhantomData }
+        ScanlineHachureFiller {
+            _phantom: PhantomData,
+        }
     }
 
-    fn render_lines(lines: Vec<Line<F>>, o: &mut DrawOptions) -> Vec<crate::graphics::drawable_ops::Op<F>> {
+    fn render_lines(
+        lines: Vec<Line<F>>,
+        o: &mut DrawOptions,
+    ) -> Vec<crate::graphics::drawable_ops::Op<F>> {
         let mut ops: Vec<crate::graphics::drawable_ops::Op<F>> = vec![];
         lines.iter().for_each(|l| {
             ops.extend(crate::graphics::renderer::_double_line(

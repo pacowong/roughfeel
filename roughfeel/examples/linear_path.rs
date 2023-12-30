@@ -3,7 +3,7 @@
 
 // extern crate roughfeel;
 
-use euclid::{Point2D, default};
+use euclid::{default, Point2D};
 use palette::Srgba;
 use piet::{Color, RenderContext};
 use piet_common::kurbo::Rect;
@@ -14,9 +14,9 @@ use roughfeel::graphics::drawable_ops::OpSet;
 use roughfeel::renderer_engine::kurbo_drawable::{KurboDrawable, KurboOpSet};
 use roughfeel::renderer_engine::kurbo_drawable_maker::KurboDrawableMaker;
 
-use roughfeel::*;
 use roughfeel::graphics::drawable_maker::{Generator, RoughlyDrawableMaker};
 use roughfeel::graphics::paint::FillStyle;
+use roughfeel::*;
 
 // use rough_piet::KurboGenerator;
 // use roughr::core::{FillStyle, OptionsBuilder};
@@ -39,9 +39,9 @@ fn main() {
         .fill_weight(DPI * 0.01)
         .build()
         .unwrap();
-    let generator = KurboDrawableMaker::<f32, f32, KurboDrawable<f32> >::new(
-        Generator::<f32, f32, OpSet<f32> >::new(options.clone()),
-        Some(options.clone())
+    let generator = KurboDrawableMaker::<f32, f32, KurboDrawable<f32>>::new(
+        Generator::<f32, f32, OpSet<f32>>::new(options.clone()),
+        Some(options.clone()),
     );
     //::default{}; //Generator::<f32, f32, KurboOpSet<f32>>::new(options);//::default();//::new(options);
     let points = [

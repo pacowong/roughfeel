@@ -1,19 +1,19 @@
 use std::fmt::Display;
 use std::ops::MulAssign;
 
-use palette::Srgba;
+use crate::graphics::drawable::{DrawOptions, DrawOptionsBuilder, OpSetTrait, RoughlyDrawable};
 use palette::rgb::Rgba;
+use palette::Srgba;
 use piet::kurbo::{BezPath, PathEl, Point};
 use piet::{Color, LineJoin, RenderContext, StrokeStyle};
-use crate::graphics::drawable::{DrawOptions, DrawOptionsBuilder, RoughlyDrawable, OpSetTrait};
 
 use num_traits::{Float, FromPrimitive};
 
-use euclid::{Trig, default::Point2D};
+use euclid::{default::Point2D, Trig};
 
 use crate::graphics::drawable_ops::{OpSet, OpSetType, OpType};
 
-use crate::graphics::drawable::{Drawable};
+use crate::graphics::drawable::Drawable;
 
 #[derive(Clone)]
 pub struct KurboOpSet<F: Float + Trig> {
@@ -44,7 +44,7 @@ pub struct KurboDrawable<F: Float + Trig> {
 //     }
 // }
 
-impl<FT: Float + Trig> Drawable<KurboOpSet<FT> > for KurboDrawable<FT> {
+impl<FT: Float + Trig> Drawable<KurboOpSet<FT>> for KurboDrawable<FT> {
     type F = FT;
 
     // fn draw(
@@ -57,12 +57,12 @@ impl<FT: Float + Trig> Drawable<KurboOpSet<FT> > for KurboDrawable<FT> {
     fn draw(
         shape: String,
         options: DrawOptions,
-        sets: Vec<KurboOpSet<Self::F>>) -> KurboDrawable<FT> {
+        sets: Vec<KurboOpSet<Self::F>>,
+    ) -> KurboDrawable<FT> {
         Self {
             shape: shape.into(),
-            options: options
-                .clone(),
-                // .unwrap_or_else(|| self.default_options.clone()),
+            options: options.clone(),
+            // .unwrap_or_else(|| self.default_options.clone()),
             sets: Vec::from_iter(sets.iter().cloned()),
         }
     }
@@ -196,7 +196,6 @@ impl<F: Float + Trig> KurboDrawable<F> {
     }
 }
 
-
 pub trait ToKurboOpset<F: Float + Trig> {
     fn to_kurbo_opset(self) -> KurboOpSet<F>;
 }
@@ -254,7 +253,11 @@ impl<F: Float + Trig + FromPrimitive> ToKurboDrawable<F> for RoughlyDrawable<F> 
         KurboDrawable {
             shape: self.shape,
             options: self.options,
-            sets: self.opsets.into_iter().map(|s| s.to_kurbo_opset()).collect(),
+            sets: self
+                .opsets
+                .into_iter()
+                .map(|s| s.to_kurbo_opset())
+                .collect(),
         }
     }
 }
@@ -277,6 +280,8 @@ fn convert_line_join_from_roughr_to_piet(
         Some(crate::graphics::paint::LineJoin::Miter { limit }) => LineJoin::Miter { limit },
         Some(crate::graphics::paint::LineJoin::Round) => LineJoin::Round,
         Some(crate::graphics::paint::LineJoin::Bevel) => LineJoin::Bevel,
-        None => LineJoin::Miter { limit: LineJoin::DEFAULT_MITER_LIMIT },
+        None => LineJoin::Miter {
+            limit: LineJoin::DEFAULT_MITER_LIMIT,
+        },
     }
 }
