@@ -1,6 +1,6 @@
 use derive_builder::Builder;
 use rand::{random, Rng, SeedableRng};
-use rand_chacha::{ChaCha8Core, ChaCha8Rng};
+use rand_chacha::ChaCha8Rng;
 // use rand_core::RngCore;
 use euclid::Trig;
 use num_traits::Float;

@@ -8,7 +8,7 @@ use num_traits::{Float, FromPrimitive};
 use points_on_curve::{curve_to_bezier, points_on_bezier_curves};
 
 use crate::graphics::_c;
-use crate::graphics::drawable::{DrawOptions, DrawOptionsBuilder, Drawable, PathInfo};
+use crate::graphics::drawable::{DrawOptions, DrawOptionsBuilder, Drawable, PathInfo, OpSetTrait, RoughlyDrawable};
 use crate::graphics::drawable_ops::{OpSet, OpSetType, OpType};
 use crate::graphics::geometry::{convert_bezier_quadratic_to_cubic, BezierQuadratic};
 use crate::graphics::paint::FillStyle;
@@ -17,9 +17,6 @@ use crate::graphics::renderer::{
     bezier_cubic, bezier_quadratic, curve, ellipse_with_params, generate_ellipse_params, line,
     linear_path, pattern_fill_arc, pattern_fill_polygons, rectangle, solid_fill_polygon, svg_path,
 };
-
-use super::drawable::{OpSetTrait, RoughlyDrawable};
-use super::render_context::RoughlyCanvas;
 
 pub struct Generator<OpSetT: OpSetTrait> {
     default_options: DrawOptions,
@@ -38,7 +35,6 @@ impl<F: Trig + Float, OpSetT: OpSetTrait<F = F>> Default for Generator<OpSetT> {
     }
 }
 
-//impl<F: Trig + Float, OpSetT: OpSetTrait<F = F>> Generator<OpSetT> 
 impl<F: Trig + Float> Generator<OpSet<F>>
 {
     pub fn new(options: DrawOptions) -> Self {
@@ -48,9 +44,6 @@ impl<F: Trig + Float> Generator<OpSet<F>>
         }
     }
 
-    // fn d(&self, name: T, op_sets: &[OpSet<F>], options: &Option<DrawOptions>) -> RoughlyDrawable<F>
-    // where
-    //     T: Into<String>,
     fn d(
         &self,
         name: String,
@@ -154,7 +147,6 @@ pub trait RoughlyDrawableMaker<
     OpSetT,
     OutputDrawable,
 > where
-    //OutputDrawable: Drawable<OpSet<F> >, //Not OK, only one kind of opset
     OpSetT: OpSetTrait<F = F>,
     OutputDrawable: Drawable<OpSetT>,
 {
@@ -226,26 +218,9 @@ pub trait RoughlyDrawableMaker<
     fn path(&self, svg_path: String, options: &Option<DrawOptions>) -> OutputDrawable;
 }
 
-//impl<T, F: Trig + Float + FromPrimitive + MulAssign + Display> RoughlyDrawableMaker<RoughlyDrawable<F>, F> for Generator<T, F, RoughlyDrawable<F> > { //Work
-//impl<T, F: Trig + Float + FromPrimitive + MulAssign + Display, OpSetT: OpSetTrait<F = F>, OutputDrawable: Drawable<OpSetT, F = F> > RoughlyDrawableMaker<RoughlyDrawable<F>, OutputDrawable > for Generator<T, F, OutputDrawable > {
 impl<F: Trig + Float + FromPrimitive + MulAssign + Display>
     RoughlyDrawableMaker<F, OpSet<F>, RoughlyDrawable<OpSet<F>>> for Generator<OpSet<F>>
-// <OutputDrawable as Drawable>::F: F
 {
-    // fn d<T, F>(&self, name: T, op_sets: &[OpSet<F>], options: &Option<DrawOptions>) -> RoughlyDrawable<F>
-    // where
-    //     T: Into<String>,
-    //     F: Float + Trig + FromPrimitive,
-    // {
-    //     RoughlyDrawable {
-    //         shape: name.into(),
-    //         options: options
-    //             .clone()
-    //             .unwrap_or_else(|| self.default_options.clone()),
-    //         sets: Vec::from_iter(op_sets.iter().cloned()),
-    //     }
-    // }
-
     fn line(&self, x1: F, y1: F, x2: F, y2: F, options: &Option<DrawOptions>) -> RoughlyDrawable<OpSet<F>>
     where
         F: Float + Trig + FromPrimitive,

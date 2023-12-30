@@ -33,6 +33,7 @@ impl<F: Float + Trig> Line<F> {
             end_point: points[1],
         }
     }
+
     pub fn as_points(&self) -> Vec<Point2D<F>> {
         return vec![self.start_point, self.end_point];
     }
