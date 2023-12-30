@@ -1,0 +1,8 @@
+[workspace]
+
+members = [
+    "roughfeel",
+    "rough_piet",
+]
+
+resolver = "1"
