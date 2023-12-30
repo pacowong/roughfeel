@@ -20,7 +20,7 @@ pub struct KurboDrawableMaker<
     OutputDrawable: Drawable<KurboOpSet<F>>,
 > {
     //gen: Generator<T, F, OutputDrawable>, //RoughlyDrawableMaker<RoughlyDrawable<F>, F> >,
-    gen: Generator<F, OpSet<F>>,
+    gen: Generator<OpSet<F>>,
     options: Option<DrawOptions>,
     phantom_data_f: PhantomData<F>,
     phantom_data_output_drawable: PhantomData<OutputDrawable>,
@@ -30,7 +30,7 @@ impl<F: Float + Trig + FromPrimitive + MulAssign + Display,
         OutputDrawable: Drawable<KurboOpSet<F>>,
     > KurboDrawableMaker<F, OutputDrawable>
 {
-    pub fn new(gen: Generator<F, OpSet<F>>, options: Option<DrawOptions>) -> Self {
+    pub fn new(gen: Generator<OpSet<F>>, options: Option<DrawOptions>) -> Self {
         Self {
             gen,
             options,

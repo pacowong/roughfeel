@@ -34,8 +34,8 @@ fn main() {
         .build()
         .unwrap();
     // let generator = KurboGenerator::new(options);
-    let generator = KurboDrawableMaker::<f32, f32, KurboDrawable<f32>>::new(
-        Generator::<f32, f32, OpSet<f32>>::new(options.clone()),
+    let generator = KurboDrawableMaker::<f32, KurboDrawable<f32>>::new(
+        Generator::<OpSet<f32>>::new(options.clone()),
         Some(options.clone()),
     );
     let heart_svg_path  = "M140 20C73 20 20 74 20 140c0 135 136 170 228 303 88-132 229-173 229-303 0-66-54-120-120-120-48 0-90 28-109 69-19-41-60-69-108-69z".into();

@@ -21,30 +21,27 @@ use crate::graphics::renderer::{
 use super::drawable::{OpSetTrait, RoughlyDrawable};
 use super::render_context::RoughlyCanvas;
 
-pub struct Generator<F: Trig + Float, OpSetT: OpSetTrait<F = F>> {
+pub struct Generator<OpSetT: OpSetTrait> {
     default_options: DrawOptions,
-    phantom_data_f: PhantomData<F>,
     phantom_data_opsett: PhantomData<OpSetT>,
 }
 
-impl<F: Trig + Float, OpSetT: OpSetTrait<F = F>> Default for Generator<F, OpSetT> {
+impl<F: Trig + Float, OpSetT: OpSetTrait<F = F>> Default for Generator<OpSetT> {
     fn default() -> Self {
         Self {
             default_options: DrawOptionsBuilder::default()
                 .seed(345_u64)
                 .build()
                 .expect("failed to build default options"),
-            phantom_data_f: PhantomData,
             phantom_data_opsett: PhantomData,
         }
     }
 }
 
-impl<F: Trig + Float, OpSetT: OpSetTrait<F = F>> Generator<F, OpSetT> {
+impl<F: Trig + Float, OpSetT: OpSetTrait<F = F>> Generator<OpSetT> {
     pub fn new(options: DrawOptions) -> Self {
         Generator {
             default_options: options,
-            phantom_data_f: PhantomData,
             phantom_data_opsett: PhantomData,
         }
     }
@@ -231,7 +228,7 @@ pub trait RoughlyDrawableMaker<
 //impl<T, F: Trig + Float + FromPrimitive + MulAssign + Display> RoughlyDrawableMaker<RoughlyDrawable<F>, F> for Generator<T, F, RoughlyDrawable<F> > { //Work
 //impl<T, F: Trig + Float + FromPrimitive + MulAssign + Display, OpSetT: OpSetTrait<F = F>, OutputDrawable: Drawable<OpSetT, F = F> > RoughlyDrawableMaker<RoughlyDrawable<F>, OutputDrawable > for Generator<T, F, OutputDrawable > {
 impl<F: Trig + Float + FromPrimitive + MulAssign + Display>
-    RoughlyDrawableMaker<F, OpSet<F>, RoughlyDrawable<F>> for Generator<F, OpSet<F>>
+    RoughlyDrawableMaker<F, OpSet<F>, RoughlyDrawable<F>> for Generator<OpSet<F>>
 // <OutputDrawable as Drawable>::F: F
 {
     // fn d<T, F>(&self, name: T, op_sets: &[OpSet<F>], options: &Option<DrawOptions>) -> RoughlyDrawable<F>
