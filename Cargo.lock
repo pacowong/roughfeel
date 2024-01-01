@@ -1021,7 +1021,7 @@ dependencies = [
  "rand_chacha",
  "rand_core",
  "svg_path_ops",
- "svgtypes",
+ "svgtypes 0.13.0",
 ]
 
 [[package]]
@@ -1036,7 +1036,7 @@ dependencies = [
  "points_on_curve",
  "rand",
  "svg_path_ops",
- "svgtypes",
+ "svgtypes 0.11.0",
 ]
 
 [[package]]
@@ -1117,7 +1117,7 @@ checksum = "3685c82a045a6af0c488f0550b0f52b4c77d2a52b0ca8aba719f9d268fa96965"
 name = "svg_path_ops"
 version = "0.5.0"
 dependencies = [
- "svgtypes",
+ "svgtypes 0.13.0",
 ]
 
 [[package]]
@@ -1125,6 +1125,16 @@ name = "svgtypes"
 version = "0.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ed4b0611e7f3277f68c0fa18e385d9e2d26923691379690039548f867cef02a7"
+dependencies = [
+ "kurbo",
+ "siphasher",
+]
+
+[[package]]
+name = "svgtypes"
+version = "0.13.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6e44e288cd960318917cbd540340968b90becc8bc81f171345d706e7a89d9d70"
 dependencies = [
  "kurbo",
  "siphasher",
