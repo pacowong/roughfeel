@@ -1,7 +1,6 @@
 use derive_builder::Builder;
 use rand::{random, Rng, SeedableRng};
 use rand_chacha::ChaCha8Rng;
-// use rand_core::RngCore;
 use euclid::Trig;
 use num_traits::Float;
 use palette::Srgba;
@@ -83,7 +82,6 @@ pub struct DrawOptions {
 
 impl Default for DrawOptions {
     fn default() -> Self {
-        // let x = ChaCha8Rng;//::seed_from_u64(2);
         Self {
             max_randomness_offset: Some(2.0),
             roughness: Some(1.0),
@@ -156,14 +154,14 @@ pub trait OpSetTrait {
     type F: Float + Trig;
 }
 
-pub trait Drawable<OpSetT: OpSetTrait> {
+pub trait Drawable<OpSetT: OpSetTrait>
+where
+    OpSetT::F: Float + Trig
+{
     // A drawable is a general concept for a graphic that can be drawn to the screen.
-    type F: Float + Trig;
-    // type OpSetT: OpSet<Self::F>
     fn draw(
         shape: String,
         options: DrawOptions,
-        //sets: Vec<OpSet<Self::F>>) -> Self;
         sets: Vec<OpSetT>,
     ) -> Self;
 }
@@ -178,8 +176,6 @@ where
 }
 
 impl<AF: Float + Trig> Drawable<OpSet<AF>> for RoughlyDrawable<OpSet<AF>> {
-    type F = AF;
-
     fn draw(shape: String, options: DrawOptions, sets: Vec<OpSet<AF>>) -> RoughlyDrawable<OpSet<AF>> {
         Self {
             shape: shape.into(),

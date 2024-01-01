@@ -45,7 +45,7 @@ pub struct KurboDrawable<F: Float + Trig> {
 // }
 
 impl<FT: Float + Trig> Drawable<KurboOpSet<FT>> for KurboDrawable<FT> {
-    type F = FT;
+    // type F = FT;
 
     // fn draw(
     //     shape: String,
@@ -57,7 +57,7 @@ impl<FT: Float + Trig> Drawable<KurboOpSet<FT>> for KurboDrawable<FT> {
     fn draw(
         shape: String,
         options: DrawOptions,
-        sets: Vec<KurboOpSet<Self::F>>,
+        sets: Vec<KurboOpSet<FT>>,
     ) -> KurboDrawable<FT> {
         Self {
             shape: shape.into(),
