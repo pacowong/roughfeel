@@ -569,6 +569,79 @@ fn _offset_opt<F: Float + Trig + FromPrimitive>(
     _offset(-x, x, ops, roughness_gain)
 }
 
+fn _line_add_ops<F: Float + Trig + FromPrimitive>(
+    x1: F,
+    y1: F,
+    x2: F,
+    y2: F,
+    o: &mut DrawOptions,
+    mover: bool,
+    overlay: bool,
+    diverge_point: F,
+    offset: F,
+    roughness_gain: F,
+    mid_disp_x: F,
+    mid_disp_y: F
+) -> Vec<Op<F>> {
+    let mut ops: Vec<Op<F>> = Vec::new();
+    let preserve_vertices = o.preserve_vertices.unwrap_or(false);
+    let half_offset = offset / _c(2.0);
+    let offset_for_overlay = if overlay {
+        half_offset
+    } else {
+        offset
+    };
+    if mover {
+        ops.push(Op {
+            op: OpType::Move,
+            data: vec![
+                x1 + if preserve_vertices {
+                    _c(0.0)
+                } else {
+                    _offset_opt(offset_for_overlay, o, Some(roughness_gain))
+                },
+                y1 + if preserve_vertices {
+                    _c(0.0)
+                } else {
+                    _offset_opt(offset_for_overlay, o, Some(roughness_gain))
+                },
+            ],
+        });
+    }
+    ops.push(Op {
+        op: OpType::BCurveTo,
+        data: vec![
+            mid_disp_x
+                + x1
+                + (x2 - x1) * diverge_point
+                + _offset_opt(offset_for_overlay, o, Some(roughness_gain)),
+            mid_disp_y
+                + y1
+                + (y2 - y1) * diverge_point
+                + _offset_opt(offset_for_overlay, o, Some(roughness_gain)),
+            mid_disp_x
+                + x1
+                + _c::<F>(2.0) * (x2 - x1) * diverge_point
+                + _offset_opt(offset_for_overlay, o, Some(roughness_gain)),
+            mid_disp_y
+                + y1
+                + _c::<F>(2.0) * (y2 - y1) * diverge_point
+                + _offset_opt(offset_for_overlay, o, Some(roughness_gain)),
+            x2 + if preserve_vertices {
+                _c(0.0)
+            } else {
+                _offset_opt(offset_for_overlay, o, Some(roughness_gain))
+            },
+            y2 + if preserve_vertices {
+                _c(0.0)
+            } else {
+                _offset_opt(offset_for_overlay, o, Some(roughness_gain))
+            },
+        ],
+    });
+    ops
+}
+
 fn _line<F: Float + Trig + FromPrimitive>(
     x1: F,
     y1: F,
@@ -593,7 +666,6 @@ fn _line<F: Float + Trig + FromPrimitive>(
     if (offset * offset * _c(100.0)) > length_sq {
         offset = length / _c(10.0);
     }
-    let half_offset = offset / _c(2.0);
     let diverge_point = _c::<F>(0.2) + _c::<F>(o.random() as f32) * _c(0.2);
     let mut mid_disp_x = _c::<F>(o.bowing.unwrap_or(1.0) as f32)
         * _c(o.max_randomness_offset.unwrap_or(2.0) as f32)
@@ -605,110 +677,20 @@ fn _line<F: Float + Trig + FromPrimitive>(
         / _c(200.0);
     mid_disp_x = _offset_opt(mid_disp_x, o, Some(roughness_gain));
     mid_disp_y = _offset_opt(mid_disp_y, o, Some(roughness_gain));
-    let mut ops: Vec<Op<F>> = Vec::new();
-
-    let preserve_vertices = o.preserve_vertices.unwrap_or(false);
-    if mover {
-        if overlay {
-            ops.push(Op {
-                op: OpType::Move,
-                data: vec![
-                    x1 + if preserve_vertices {
-                        _c(0.0)
-                    } else {
-                        _offset_opt(half_offset, o, Some(roughness_gain))
-                    },
-                    y1 + if preserve_vertices {
-                        _c(0.0)
-                    } else {
-                        _offset_opt(half_offset, o, Some(roughness_gain))
-                    },
-                ],
-            });
-        } else {
-            ops.push(Op {
-                op: OpType::Move,
-                data: vec![
-                    x1 + if preserve_vertices {
-                        _c(0.0)
-                    } else {
-                        _offset_opt(offset, o, Some(roughness_gain))
-                    },
-                    y1 + if preserve_vertices {
-                        _c(0.0)
-                    } else {
-                        _offset_opt(offset, o, Some(roughness_gain))
-                    },
-                ],
-            });
-        }
-    }
-    if overlay {
-        ops.push(Op {
-            op: OpType::BCurveTo,
-            data: vec![
-                mid_disp_x
-                    + x1
-                    + (x2 - x1) * diverge_point
-                    + _offset_opt(half_offset, o, Some(roughness_gain)),
-                mid_disp_y
-                    + y1
-                    + (y2 - y1) * diverge_point
-                    + _offset_opt(half_offset, o, Some(roughness_gain)),
-                mid_disp_x
-                    + x1
-                    + _c::<F>(2.0) * (x2 - x1) * diverge_point
-                    + _offset_opt(half_offset, o, Some(roughness_gain)),
-                mid_disp_y
-                    + y1
-                    + _c::<F>(2.0) * (y2 - y1) * diverge_point
-                    + _offset_opt(half_offset, o, Some(roughness_gain)),
-                x2 + if preserve_vertices {
-                    _c(0.0)
-                } else {
-                    _offset_opt(half_offset, o, Some(roughness_gain))
-                },
-                y2 + if preserve_vertices {
-                    _c(0.0)
-                } else {
-                    _offset_opt(half_offset, o, Some(roughness_gain))
-                },
-            ],
-        });
-    } else {
-        ops.push(Op {
-            op: OpType::BCurveTo,
-            data: vec![
-                mid_disp_x
-                    + x1
-                    + (x2 - x1) * diverge_point
-                    + _offset_opt(offset, o, Some(roughness_gain)),
-                mid_disp_y
-                    + y1
-                    + (y2 - y1) * diverge_point
-                    + _offset_opt(offset, o, Some(roughness_gain)),
-                mid_disp_x
-                    + x1
-                    + _c::<F>(2.0) * (x2 - x1) * diverge_point
-                    + _offset_opt(offset, o, Some(roughness_gain)),
-                mid_disp_y
-                    + y1
-                    + _c::<F>(2.0) * (y2 - y1) * diverge_point
-                    + _offset_opt(offset, o, Some(roughness_gain)),
-                x2 + if preserve_vertices {
-                    _c(0.0)
-                } else {
-                    _offset_opt(offset, o, Some(roughness_gain))
-                },
-                y2 + if preserve_vertices {
-                    _c(0.0)
-                } else {
-                    _offset_opt(offset, o, Some(roughness_gain))
-                },
-            ],
-        });
-    }
-    ops
+    _line_add_ops::<F>(
+        x1,
+        y1,
+        x2,
+        y2,
+        o,
+        mover,
+        overlay,
+        diverge_point,
+        offset,
+        roughness_gain,
+        mid_disp_x,
+        mid_disp_y
+    )
 }
 
 pub(crate) fn _double_line<F: Float + Trig + FromPrimitive>(
@@ -853,6 +835,7 @@ pub(crate) fn _compute_ellipse_points<F: Float + Trig + FromPrimitive>(
     let mut all_points: Vec<Point2D<F>> = Vec::new();
 
     if core_only {
+        // Smooth edge
         let increment_inner = increment / _c(4.0);
         all_points.push(Point2D::new(
             cx + rx * Float::cos(-increment_inner),
@@ -875,6 +858,7 @@ pub(crate) fn _compute_ellipse_points<F: Float + Trig + FromPrimitive>(
             cy + ry * Float::sin(increment_inner),
         ));
     } else {
+        // Rough edge
         let rad_offset: F = _offset_opt::<F>(_c(0.5), o, None) - (_c::<F>(f32::PI()) / _c(2.0));
         all_points.push(Point2D::new(
             _offset_opt(offset, o, None)
