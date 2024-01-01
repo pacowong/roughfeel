@@ -153,7 +153,14 @@ pub trait RoughlyDrawableMaker<
     // This trait contains all primitive shapes
     // type OutputDrawable: Drawable<OpSetT: OpSetTrait, F=F>;
 
-    fn line(&self, x1: F, y1: F, x2: F, y2: F, options: &Option<DrawOptions>) -> OutputDrawable;
+    fn line(
+        &self,
+        x1: F,
+        y1: F,
+        x2: F,
+        y2: F,
+        options: &Option<DrawOptions>
+    ) -> OutputDrawable;
 
     fn rectangle(
         &self,
@@ -173,7 +180,13 @@ pub trait RoughlyDrawableMaker<
         options: &Option<DrawOptions>,
     ) -> OutputDrawable;
 
-    fn circle(&self, x: F, y: F, diameter: F, options: &Option<DrawOptions>) -> OutputDrawable;
+    fn circle(
+        &self,
+        x: F,
+        y: F,
+        diameter: F,
+        options: &Option<DrawOptions>
+    ) -> OutputDrawable;
 
     fn linear_path(
         &self,
@@ -182,7 +195,11 @@ pub trait RoughlyDrawableMaker<
         options: &Option<DrawOptions>,
     ) -> OutputDrawable;
 
-    fn polygon(&self, points: &[Point2D<F>], options: &Option<DrawOptions>) -> OutputDrawable;
+    fn polygon(
+        &self,
+        points: &[Point2D<F>],
+        options: &Option<DrawOptions>
+    ) -> OutputDrawable;
 
     fn arc(
         &self,
@@ -213,9 +230,17 @@ pub trait RoughlyDrawableMaker<
         options: &Option<DrawOptions>,
     ) -> OutputDrawable;
 
-    fn curve(&self, points: &[Point2D<F>], options: &Option<DrawOptions>) -> OutputDrawable;
+    fn curve(
+        &self,
+        points: &[Point2D<F>],
+        options: &Option<DrawOptions>
+    ) -> OutputDrawable;
 
-    fn path(&self, svg_path: String, options: &Option<DrawOptions>) -> OutputDrawable;
+    fn path(
+        &self,
+        svg_path: String,
+        options: &Option<DrawOptions>
+    ) -> OutputDrawable;
 }
 
 impl<F: Trig + Float + FromPrimitive + MulAssign + Display>

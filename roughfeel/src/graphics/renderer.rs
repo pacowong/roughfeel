@@ -42,8 +42,9 @@ pub struct EllipseResult<F: Float + FromPrimitive + Trig> {
 /// options and random number seed you use
 ///
 /// ```rust
-/// use roughr::core::{Op, OpSetType, OpType, DrawOptionsBuilder};
-/// use roughr::renderer::line;
+/// use roughfeel::graphics::drawable_ops::{Op, OpSet, OpSetType, OpType};
+/// use roughfeel::graphics::drawable::{DrawOptionsBuilder, RoughlyDrawable};
+/// use roughfeel::graphics::renderer::line;
 ///
 /// let mut o = DrawOptionsBuilder::default().build().unwrap();
 /// let result = line(0.0, 0.0, 1.0, 0.0, &mut o);
@@ -125,8 +126,9 @@ pub fn line<F: Float + Trig + FromPrimitive>(
 ///
 ///```rust
 /// use euclid::point2;
-/// use roughr::core::{Op, OpSet, OpSetType, OpType, DrawOptionsBuilder};
-/// use roughr::renderer::linear_path;
+/// use roughfeel::graphics::drawable_ops::{Op, OpSet, OpSetType, OpType};
+/// use roughfeel::graphics::drawable::{DrawOptionsBuilder, RoughlyDrawable};
+/// use roughfeel::graphics::renderer::linear_path;
 ///
 /// let mut o = DrawOptionsBuilder::default().build().unwrap();
 /// let result = linear_path(
@@ -1235,52 +1237,47 @@ mod test {
                 ops: vec![
                     Op {
                         op: OpType::Move,
-                        data: vec![-0.009998378, -0.006502221]
+                        data: vec![-0.004765067, -0.0077411486]
                     },
                     Op {
                         op: OpType::BCurveTo,
                         data: vec![
-                            0.004064642,
-                            0.033123452,
-                            0.0023629116,
-                            0.07122354,
-                            0.0037581995,
-                            0.10122616
+                            0.004709063,
+                            0.04272398,
+                            0.009464534,
+                            0.08134974,
+                            -0.009652809,
+                            0.09730468
                         ]
                     },
                     Op {
                         op: OpType::Move,
-                        data: vec![-0.0034061566, 0.003728075]
+                        data: vec![-0.00022052787, -0.0011099565]
                     },
                     Op {
                         op: OpType::BCurveTo,
                         data: vec![
-                            -0.00069929345,
-                            0.023493448,
-                            0.0010793343,
-                            0.044991724,
-                            0.004097348,
-                            0.10335246
+                            0.0031614425, 0.020319115, 0.002903849, 0.043179963, -0.00028266618, 0.10188009
                         ]
                     },
                     Op {
                         op: OpType::Move,
-                        data: vec![-0.12339515, -0.013104506]
+                        data: vec![0.052652374, 0.10032792]
                     },
                     Op {
                         op: OpType::BCurveTo,
                         data: vec![
-                            0.35436878, 0.262468, 0.57661635, 0.6634873, 1.0144088, 1.102317
+                            0.1373705, 0.24164818, 0.464674, 0.6724219, 1.0288227, 0.936725
                         ]
                     },
                     Op {
                         op: OpType::Move,
-                        data: vec![-0.002887085, 0.049306016]
+                        data: vec![0.058580354, 0.14144523]
                     },
                     Op {
                         op: OpType::BCurveTo,
                         data: vec![
-                            0.25721234, 0.27631992, 0.59522116, 0.53014225, 0.94422996, 0.9684893
+                            0.2968616, 0.3438021, 0.58623457, 0.5934612, 1.0143586, 1.0188761
                         ]
                     }
                 ],

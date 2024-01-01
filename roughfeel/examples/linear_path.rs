@@ -41,7 +41,6 @@ fn main() {
         .unwrap();
     let generator = KurboDrawableMaker::<f32, KurboDrawable<f32>>::new(
         Generator::<OpSet<f32>>::new(options.clone()),
-        Some(options.clone()),
     );
     //::default{}; //Generator::<f32, f32, KurboOpSet<f32>>::new(options);//::default();//::new(options);
     let points = [

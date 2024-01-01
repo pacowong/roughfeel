@@ -7,8 +7,8 @@ mod filler;
 mod geometry;
 pub mod paint;
 pub mod points_on_path;
-mod render_context;
-mod renderer;
+pub mod render_context;
+pub mod renderer;
 
 pub fn _c<U: Float + FromPrimitive>(inp: f32) -> U {
     U::from(inp).expect("can not parse from f32")

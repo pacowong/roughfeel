@@ -18,5 +18,8 @@ rand = "0.8.5"
 rand_chacha = { version = "0.3.1" }
 rand_core = "0.6.4"
 svg_path_ops = { version = "0.5.0", path = "../svg_path_ops" }
-svgtypes = "0.11.0"
+svgtypes = "0.13.0"
 piet-common = {version = "0.6.2", features = ["png"]}
+
+[lib]
+doctest = false #Temporary

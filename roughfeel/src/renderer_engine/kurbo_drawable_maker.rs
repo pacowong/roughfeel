@@ -5,7 +5,7 @@ use num_traits::{Float, FromPrimitive};
 use euclid::{default::Point2D, Trig};
 
 use crate::graphics::{
-    drawable::{DrawOptions, Drawable, RoughlyDrawable},
+    drawable::{DrawOptions, Drawable},
     drawable_maker::{Generator, RoughlyDrawableMaker},
     drawable_ops::OpSet,
 };
@@ -19,9 +19,7 @@ pub struct KurboDrawableMaker<
     F: Trig + Float + FromPrimitive + MulAssign + Display,
     OutputDrawable: Drawable<KurboOpSet<F>>,
 > {
-    //gen: Generator<T, F, OutputDrawable>, //RoughlyDrawableMaker<RoughlyDrawable<F>, F> >,
     gen: Generator<OpSet<F>>,
-    options: Option<DrawOptions>,
     phantom_data_f: PhantomData<F>,
     phantom_data_output_drawable: PhantomData<OutputDrawable>,
 }
@@ -30,18 +28,15 @@ impl<F: Float + Trig + FromPrimitive + MulAssign + Display,
         OutputDrawable: Drawable<KurboOpSet<F>>,
     > KurboDrawableMaker<F, OutputDrawable>
 {
-    pub fn new(gen: Generator<OpSet<F>>, options: Option<DrawOptions>) -> Self {
+    pub fn new(gen: Generator<OpSet<F>>) -> Self {
         Self {
             gen,
-            options,
             phantom_data_f: PhantomData,
             phantom_data_output_drawable: PhantomData,
         }
     }
 }
 
-// impl<T, F: Trig + Float + FromPrimitive + MulAssign + Display> RoughlyDrawableMaker<RoughlyDrawable<F>, F> for Generator<T, F, RoughlyDrawable<F> >
-//impl<T, F: Trig + Float + FromPrimitive + MulAssign + Display, OutputDrawable: Drawable> RoughlyDrawableMaker<RoughlyDrawable<F>, F> for Generator<T, F, OutputDrawable>
 impl<
         F: Float + Trig + FromPrimitive + MulAssign + Display,
         OutputDrawable: Drawable<KurboOpSet<F>>,
@@ -49,7 +44,7 @@ impl<
     for KurboDrawableMaker<F, OutputDrawable>
 {
     fn line(&self, x1: F, y1: F, x2: F, y2: F, options: &Option<DrawOptions>) -> KurboDrawable<F> {
-        let drawable = self.gen.line(x1, y1, x2, y2, &self.options);
+        let drawable = self.gen.line(x1, y1, x2, y2, options);
         drawable.to_kurbo_drawable()
     }
 
@@ -61,7 +56,7 @@ impl<
         height: F,
         options: &Option<DrawOptions>,
     ) -> KurboDrawable<F> {
-        let drawable = self.gen.rectangle(x, y, width, height, &self.options);
+        let drawable = self.gen.rectangle(x, y, width, height, options);
         drawable.to_kurbo_drawable()
     }
 
@@ -73,12 +68,12 @@ impl<
         height: F,
         options: &Option<DrawOptions>,
     ) -> KurboDrawable<F> {
-        let drawable = self.gen.ellipse(x, y, width, height, &self.options);
+        let drawable = self.gen.ellipse(x, y, width, height, options);
         drawable.to_kurbo_drawable()
     }
 
     fn circle(&self, x: F, y: F, diameter: F, options: &Option<DrawOptions>) -> KurboDrawable<F> {
-        let drawable = self.gen.circle(x, y, diameter, &self.options);
+        let drawable = self.gen.circle(x, y, diameter, options);
         drawable.to_kurbo_drawable()
     }
 
@@ -88,12 +83,12 @@ impl<
         close: bool,
         options: &Option<DrawOptions>,
     ) -> KurboDrawable<F> {
-        let drawable = self.gen.linear_path(points, close, &self.options);
+        let drawable = self.gen.linear_path(points, close, options);
         drawable.to_kurbo_drawable()
     }
 
     fn polygon(&self, points: &[Point2D<F>], options: &Option<DrawOptions>) -> KurboDrawable<F> {
-        let drawable = self.gen.polygon(points, &self.options);
+        let drawable = self.gen.polygon(points, options);
         drawable.to_kurbo_drawable()
     }
 
@@ -110,7 +105,7 @@ impl<
     ) -> KurboDrawable<F> {
         let drawable = self
             .gen
-            .arc(x, y, width, height, start, stop, closed, &self.options);
+            .arc(x, y, width, height, start, stop, closed, options);
         drawable.to_kurbo_drawable()
     }
 
@@ -121,7 +116,7 @@ impl<
         end: Point2D<F>,
         options: &Option<DrawOptions>,
     ) -> KurboDrawable<F> {
-        let drawable = self.gen.bezier_quadratic(start, cp, end, &self.options);
+        let drawable = self.gen.bezier_quadratic(start, cp, end, options);
         drawable.to_kurbo_drawable()
     }
 
@@ -133,17 +128,17 @@ impl<
         end: Point2D<F>,
         options: &Option<DrawOptions>,
     ) -> KurboDrawable<F> {
-        let drawable = self.gen.bezier_cubic(start, cp1, cp2, end, &self.options);
+        let drawable = self.gen.bezier_cubic(start, cp1, cp2, end, options);
         drawable.to_kurbo_drawable()
     }
 
     fn curve(&self, points: &[Point2D<F>], options: &Option<DrawOptions>) -> KurboDrawable<F> {
-        let drawable = self.gen.curve(points, &self.options);
+        let drawable = self.gen.curve(points, options);
         drawable.to_kurbo_drawable()
     }
 
     fn path(&self, svg_path: String, options: &Option<DrawOptions>) -> KurboDrawable<F> {
-        let drawable = self.gen.path(svg_path, &self.options);
+        let drawable = self.gen.path(svg_path, options);
         drawable.to_kurbo_drawable()
     }
 }
