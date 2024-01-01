@@ -42,15 +42,11 @@ impl<F: Float + Trig> Line<F> {
         (self.end_point - self.start_point).length()
     }
 
+    /// Rotate a line by `degrees` around a `center`. The center may not be the midpoint of the line.
     pub fn rotate(&mut self, center: &Point2D<F>, degrees: F) {
-        let angle = Angle::radians(degrees.to_radians());
-        let translation = Translation2D::new(-center.x, -center.y);
-        let transformation = translation
-            .to_transform()
-            .then_rotate(angle)
-            .then_translate(Vector2D::new(center.x, center.y));
-        self.start_point = transformation.transform_point(self.start_point);
-        self.end_point = transformation.transform_point(self.end_point);
+        let rotated_end_points = rotate_points(&[self.start_point, self.end_point], center, degrees);
+        self.start_point = rotated_end_points[0];
+        self.end_point = rotated_end_points[1];
     }
 }
 
