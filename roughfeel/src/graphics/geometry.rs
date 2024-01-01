@@ -86,6 +86,8 @@ pub fn rotate_lines<F: Float + Trig>(
 pub fn convert_bezier_quadratic_to_cubic<F: Float + FromPrimitive + Trig>(
     bezier_quadratic: BezierQuadratic<F>,
 ) -> BezierCubic<F> {
+    // This can be verified by substituting the following points in the cubic Bézier curves.
+    // You will obtain the quadratic cubic Bézier curves.
     let cubic_x1 = bezier_quadratic.start.x
         + _c::<F>(2.0 / 3.0) * (bezier_quadratic.cp.x - bezier_quadratic.start.x);
     let cubic_y1 = bezier_quadratic.start.y
