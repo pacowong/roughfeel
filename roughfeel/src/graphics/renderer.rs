@@ -1223,7 +1223,6 @@ mod test {
     }
 
     #[test]
-    // #[ignore = "failing due to randommness"]
     fn linear_path() {
         let result = super::linear_path(
             &[point2(0.0f32, 0.0), point2(0.0, 0.1), point2(1.0, 1.0)],
