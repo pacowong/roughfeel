@@ -2,43 +2,43 @@ use std::borrow::BorrowMut;
 use std::cmp::Ordering;
 use std::marker::PhantomData;
 
-use euclid::default::Point2D;
-use euclid::Trig;
+use nalgebra::{Point2, Scalar};
+use nalgebra_glm::RealNumber;
 use num_traits::{Float, FromPrimitive};
 
 use super::traits::PatternFiller;
-use crate::graphics::_c;
+use crate::graphics::{_c, _to_u64, _to_f64};
 use crate::graphics::drawable::DrawOptions;
 use crate::graphics::drawable_ops::OpSet;
 use crate::graphics::geometry::{rotate_lines, rotate_points, Line};
 
 #[derive(Clone)]
-struct EdgeEntry<F: Float + FromPrimitive + Trig> {
+struct EdgeEntry<F: RealNumber> {
     pub(crate) ymin: F,
     pub(crate) ymax: F,
     pub(crate) x: F,
     pub(crate) islope: F,
 }
 
-impl<F: Float + FromPrimitive + Trig> std::fmt::Display for EdgeEntry<F> {
+impl<F: RealNumber> std::fmt::Display for EdgeEntry<F> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         return f.write_str(&format!(
             "ymin={} ymax={} x={} islope={}",
-            self.ymin.to_f64().unwrap(),
-            self.ymax.to_f64().unwrap(),
-            self.x.to_f64().unwrap(),
-            self.islope.to_f64().unwrap()
+            _to_f64(self.ymin),
+            _to_f64(self.ymax),
+            _to_f64(self.x),
+            _to_f64(self.islope)
         ));
     }
 }
 
-struct ActiveEdgeEntry<F: Float + FromPrimitive + Trig> {
+struct ActiveEdgeEntry<F: RealNumber> {
     pub(crate) s: F,
     pub(crate) edge: EdgeEntry<F>,
 }
 
-pub fn polygon_hachure_lines<F: Float + FromPrimitive + Trig>(
-    polygon_list: &mut Vec<Vec<Point2D<F>>>,
+pub fn polygon_hachure_lines<F: RealNumber>(
+    polygon_list: &mut Vec<Vec<Point2<F>>>,
     options: &DrawOptions,
 ) -> Vec<Line<F>> {
     let angle = options.hachure_angle.unwrap_or(0.0) + 90.0;
@@ -49,7 +49,7 @@ pub fn polygon_hachure_lines<F: Float + FromPrimitive + Trig>(
 
     gap = f32::max(gap, 0.1);
 
-    let center = Point2D::new(_c(0.0), _c(0.0));
+    let center = Point2::new(_c(0.0), _c(0.0));
     if angle != 0.0 {
         polygon_list
             .iter_mut()
@@ -68,11 +68,11 @@ pub fn polygon_hachure_lines<F: Float + FromPrimitive + Trig>(
     return lines;
 }
 
-fn straight_hachure_lines<F>(polygon_list: &mut [Vec<Point2D<F>>], gap: F) -> Vec<Line<F>>
+fn straight_hachure_lines<F: Scalar>(polygon_list: &mut [Vec<Point2<F>>], gap: F) -> Vec<Line<F>>
 where
-    F: Float + FromPrimitive + Trig,
+    F: RealNumber,
 {
-    let mut vertex_array: Vec<Vec<Point2D<F>>> = vec![];
+    let mut vertex_array: Vec<Vec<Point2<F>>> = vec![];
     for polygon in polygon_list.iter_mut() {
         if polygon.first() != polygon.last() {
             polygon.push(
@@ -127,7 +127,7 @@ where
         } else if e1.ymax == e2.ymax {
             Ordering::Equal
         } else {
-            let ordering = (e1.ymax - e2.ymax) / F::abs(e1.ymax - e2.ymax);
+            let ordering = (e1.ymax - e2.ymax) / (e1.ymax - e2.ymax).abs();
             if ordering > _c(0.0) {
                 Ordering::Greater
             } else if ordering < _c(0.0) {
@@ -174,7 +174,7 @@ where
             if ae1.edge.x == ae2.edge.x {
                 Ordering::Equal
             } else {
-                let ratio = (ae1.edge.x - ae2.edge.x) / F::abs(ae1.edge.x - ae2.edge.x);
+                let ratio = (ae1.edge.x - ae2.edge.x) / (ae1.edge.x - ae2.edge.x).abs();
                 if ratio > _c(0.0) {
                     Ordering::Greater
                 } else {
@@ -187,8 +187,8 @@ where
                 let ce = &ae[0];
                 let ne = &ae[1];
                 lines.push(Line::from(&[
-                    euclid::Point2D::new(ce.edge.x, y),
-                    euclid::Point2D::new(ne.edge.x, y),
+                    Point2::new(ce.edge.x, y),
+                    Point2::new(ne.edge.x, y),
                 ]));
             });
         }
@@ -211,8 +211,8 @@ pub struct ScanlineHachureFiller<F> {
 
 impl<F, P> PatternFiller<F, P> for ScanlineHachureFiller<F>
 where
-    F: Float + Trig + FromPrimitive,
-    P: BorrowMut<Vec<Vec<Point2D<F>>>>,
+    F: RealNumber,
+    P: BorrowMut<Vec<Vec<Point2<F>>>>,
 {
     fn fill_polygons(
         &self,
@@ -230,7 +230,7 @@ where
     }
 }
 
-impl<F: Float + Trig + FromPrimitive> ScanlineHachureFiller<F> {
+impl<F: RealNumber + FromPrimitive> ScanlineHachureFiller<F> {
     pub fn new() -> Self {
         ScanlineHachureFiller {
             _phantom: PhantomData,
@@ -259,55 +259,55 @@ impl<F: Float + Trig + FromPrimitive> ScanlineHachureFiller<F> {
 
 #[cfg(test)]
 mod test {
-    use euclid::point2;
+    use nalgebra::Point2;
 
     use crate::graphics::geometry::Line;
 
     #[test]
     fn straight_hachure_lines() {
         let mut input = vec![vec![
-            point2(0.0, 0.0),
-            point2(0.0, 1.0),
-            point2(1.0, 1.0),
-            point2(1.0, 0.0),
+            Point2::new(0.0, 0.0),
+            Point2::new(0.0, 1.0),
+            Point2::new(1.0, 1.0),
+            Point2::new(1.0, 0.0),
         ]];
         let expected = vec![
-            Line::from(&[point2(0.0, 0.0), point2(1.0, 0.0)]),
+            Line::from(&[Point2::new(0.0, 0.0), Point2::new(1.0, 0.0)]),
             Line::from(&[
-                point2(0.0, 0.10000000149011612),
-                point2(1.0, 0.10000000149011612),
+                Point2::new(0.0, 0.10000000149011612),
+                Point2::new(1.0, 0.10000000149011612),
             ]),
             Line::from(&[
-                point2(0.0, 0.20000000298023224),
-                point2(1.0, 0.20000000298023224),
+                Point2::new(0.0, 0.20000000298023224),
+                Point2::new(1.0, 0.20000000298023224),
             ]),
             Line::from(&[
-                point2(0.0, 0.30000000447034836),
-                point2(1.0, 0.30000000447034836),
+                Point2::new(0.0, 0.30000000447034836),
+                Point2::new(1.0, 0.30000000447034836),
             ]),
             Line::from(&[
-                point2(0.0, 0.4000000059604645),
-                point2(1.0, 0.4000000059604645),
+                Point2::new(0.0, 0.4000000059604645),
+                Point2::new(1.0, 0.4000000059604645),
             ]),
             Line::from(&[
-                point2(0.0, 0.5000000074505806),
-                point2(1.0, 0.5000000074505806),
+                Point2::new(0.0, 0.5000000074505806),
+                Point2::new(1.0, 0.5000000074505806),
             ]),
             Line::from(&[
-                point2(0.0, 0.6000000089406967),
-                point2(1.0, 0.6000000089406967),
+                Point2::new(0.0, 0.6000000089406967),
+                Point2::new(1.0, 0.6000000089406967),
             ]),
             Line::from(&[
-                point2(0.0, 0.7000000104308128),
-                point2(1.0, 0.7000000104308128),
+                Point2::new(0.0, 0.7000000104308128),
+                Point2::new(1.0, 0.7000000104308128),
             ]),
             Line::from(&[
-                point2(0.0, 0.800000011920929),
-                point2(1.0, 0.800000011920929),
+                Point2::new(0.0, 0.800000011920929),
+                Point2::new(1.0, 0.800000011920929),
             ]),
             Line::from(&[
-                point2(0.0, 0.9000000134110451),
-                point2(1.0, 0.9000000134110451),
+                Point2::new(0.0, 0.9000000134110451),
+                Point2::new(1.0, 0.9000000134110451),
             ]),
         ];
         let result = super::straight_hachure_lines(&mut input, 0.1);

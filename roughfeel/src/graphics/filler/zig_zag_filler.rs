@@ -1,14 +1,14 @@
 use std::borrow::BorrowMut;
 use std::marker::PhantomData;
 
-use euclid::default::Point2D;
-use euclid::{point2, Trig};
+use nalgebra::{Point2, Scalar};
+use nalgebra_glm::RealNumber;
 use num_traits::{Float, FloatConst, FromPrimitive};
 
 use super::scan_line_hachure::polygon_hachure_lines;
 
 use super::traits::PatternFiller;
-use crate::graphics::_c;
+use crate::graphics::{_c, _to_f32};
 use crate::graphics::drawable::DrawOptions;
 use crate::graphics::drawable_ops::{Op, OpSet, OpSetType};
 use crate::graphics::geometry::{rotate_lines, rotate_points, Line};
@@ -19,8 +19,8 @@ pub struct ZigZagFiller<F> {
 
 impl<F, P> PatternFiller<F, P> for ZigZagFiller<F>
 where
-    F: Float + Trig + FromPrimitive,
-    P: BorrowMut<Vec<Vec<Point2D<F>>>>,
+    F: RealNumber,
+    P: BorrowMut<Vec<Vec<Point2<F>>>>,
 {
     fn fill_polygons(&self, mut polygon_list: P, o: &mut DrawOptions) -> OpSet<F> {
         let mut gap = o.hachure_gap.map(_c::<F>).unwrap_or_else(|| _c::<F>(-1.0));
@@ -29,22 +29,22 @@ where
         }
         gap = gap.max(_c::<F>(0.1));
         let mut o2 = o.clone();
-        o2.set_hachure_gap(Some(gap.to_f32().unwrap()));
+        o2.set_hachure_gap(Some(_to_f32(gap)));
         let lines = polygon_hachure_lines(polygon_list.borrow_mut(), &o2);
         let zig_zag_angle =
             (_c::<F>(f32::PI()) / _c::<F>(180.0)) * _c::<F>(o.hachure_angle.unwrap_or(0.0));
         let mut zig_zag_lines = vec![];
-        let dgx = gap * _c::<F>(0.5) * Trig::cos(zig_zag_angle);
-        let dgy = gap * _c::<F>(0.5) * Trig::sin(zig_zag_angle);
+        let dgx = gap * _c::<F>(0.5) * zig_zag_angle.cos();
+        let dgy = gap * _c::<F>(0.5) * zig_zag_angle.sin();
 
         for line in lines.iter() {
             if line.length() > _c::<F>(0.0) {
                 zig_zag_lines.push(Line {
-                    start_point: point2(line.start_point.x - dgx, line.start_point.y + dgy),
+                    start_point: Point2::new(line.start_point.x - dgx, line.start_point.y + dgy),
                     end_point: line.end_point,
                 });
                 zig_zag_lines.push(Line {
-                    start_point: point2(line.start_point.x + dgx, line.start_point.y - dgy),
+                    start_point: Point2::new(line.start_point.x + dgx, line.start_point.y - dgy),
                     end_point: line.end_point,
                 });
             }
@@ -60,7 +60,7 @@ where
     }
 }
 
-impl<F: Float + Trig + FromPrimitive> ZigZagFiller<F> {
+impl<F: RealNumber> ZigZagFiller<F> {
     pub fn new() -> Self {
         ZigZagFiller {
             _phantom: PhantomData,
