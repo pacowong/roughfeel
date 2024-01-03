@@ -645,6 +645,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "nalgebra-glm"
+version = "0.18.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e68879ff227a94627e63bbd518b4f82b8f0cc56bb01a498251507de6d1c412d6"
+dependencies = [
+ "approx",
+ "nalgebra",
+ "num-traits",
+ "simba",
+]
+
+[[package]]
 name = "nalgebra-macros"
 version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -966,7 +978,8 @@ dependencies = [
 name = "points_on_curve"
 version = "0.5.0"
 dependencies = [
- "euclid",
+ "nalgebra",
+ "nalgebra-glm",
  "num-traits",
  "piet",
  "piet-common",
@@ -1096,6 +1109,7 @@ version = "0.1.0"
 dependencies = [
  "derive_builder",
  "nalgebra",
+ "nalgebra-glm",
  "num-traits",
  "palette",
  "piet",
