@@ -3,7 +3,9 @@ use std::ops::MulAssign;
 
 use num_traits::{Float, FromPrimitive};
 
-use euclid::{default::Point2D, Trig};
+use nalgebra::{Point2, Scalar};
+use nalgebra_glm::RealNumber;
+// use euclid::{default::Point2, Trig};
 
 use super::drawable_ops::OpSet;
 
@@ -21,7 +23,7 @@ impl RoughRenderContext {
     fn d<T, F, OutputDrawable: Drawable>(&self, name: T, op_sets: &[OpSet<F>], options: &Option<DrawOptions>) -> OutputDrawable
     where
         T: Into<String>,
-        F: Float + Trig + FromPrimitive,
+        F: Float + FromPrimitive,
     {
         OutputDrawable::draw {
             shape: name.into(),
@@ -34,7 +36,7 @@ impl RoughRenderContext {
 
     pub fn line<F, OutputDrawable: Drawable>(&self, x1: F, y1: F, x2: F, y2: F, options: &Option<DrawOptions>) -> OutputDrawable
     where
-        F: Float + Trig + FromPrimitive,
+        F: Float + FromPrimitive,
     {
         self.d(
             "line",
@@ -54,7 +56,7 @@ impl RoughRenderContext {
 */
 
 pub trait RoughlyCanvas<
-    F: Trig + Float + FromPrimitive + MulAssign + Display,
+    F: RealNumber + FromPrimitive + MulAssign + Display,
     D: Drawable<OpSet<F>>,
 >
 {
@@ -66,23 +68,23 @@ pub trait RoughlyCanvas<
 
     fn draw_circle(&self, x: F, y: F, diameter: F, options: DrawOptions);
 
-    fn draw_linear_path(&self, points: &[Point2D<F>], close: bool, options: DrawOptions);
+    fn draw_linear_path(&self, points: &[Point2<F>], close: bool, options: DrawOptions);
 
-    fn draw_polygon(&self, points: &[Point2D<F>]);
+    fn draw_polygon(&self, points: &[Point2<F>]);
 
     fn draw_arc(&self, x: F, y: F, width: F, height: F, start: F, stop: F, closed: bool);
 
-    fn draw_bezier_quadratic(&self, start: Point2D<F>, cp: Point2D<F>, end: Point2D<F>);
+    fn draw_bezier_quadratic(&self, start: Point2<F>, cp: Point2<F>, end: Point2<F>);
 
     fn draw_bezier_cubic(
         &self,
-        start: Point2D<F>,
-        cp1: Point2D<F>,
-        cp2: Point2D<F>,
-        end: Point2D<F>,
+        start: Point2<F>,
+        cp1: Point2<F>,
+        cp2: Point2<F>,
+        end: Point2<F>,
     );
 
-    fn draw_curve(&self, points: &[Point2D<F>]);
+    fn draw_curve(&self, points: &[Point2<F>]);
 
     fn draw_path(&self, svg_path: String);
 }

@@ -1,8 +1,10 @@
 // Copy from https://github.com/orhanbalci/rough-rs/blob/main/roughr/src/renderer.rs
 use std::borrow::BorrowMut;
 
-use euclid::default::Point2D;
-use euclid::{point2, Trig};
+use nalgebra::{Point2, Scalar};
+use nalgebra_glm::RealNumber;
+// use euclid::default::Point2;
+// use euclid::{point2, Trig};
 use num_traits::{Float, FloatConst, FromPrimitive};
 use svg_path_ops::{absolutize, normalize};
 use svgtypes::{PathParser, PathSegment};
@@ -18,15 +20,15 @@ use crate::graphics::geometry::{convert_bezier_quadratic_to_cubic, BezierQuadrat
 use crate::graphics::paint::FillStyle;
 
 #[derive(PartialEq, Eq, Debug)]
-pub struct EllipseParams<F: Float> {
+pub struct EllipseParams<F: RealNumber> {
     pub rx: F,
     pub ry: F,
     pub increment: F,
 }
 
-pub struct EllipseResult<F: Float + FromPrimitive + Trig> {
+pub struct EllipseResult<F: RealNumber + FromPrimitive> {
     pub opset: OpSet<F>,
-    pub estimated_points: Vec<Point2D<F>>,
+    pub estimated_points: Vec<Point2<F>>,
 }
 
 /// Constructs a line primitive that can be rendered into relevant context
@@ -95,7 +97,7 @@ pub struct EllipseResult<F: Float + FromPrimitive + Trig> {
 ///     },
 /// );
 /// ```
-pub fn line<F: Float + Trig + FromPrimitive>(
+pub fn line<F: RealNumber + FromPrimitive>(
     x1: F,
     y1: F,
     x2: F,
@@ -132,7 +134,7 @@ pub fn line<F: Float + Trig + FromPrimitive>(
 ///
 /// let mut o = DrawOptionsBuilder::default().build().unwrap();
 /// let result = linear_path(
-///     &[point2(0.0f32, 0.0), point2(0.0, 0.1), point2(1.0, 1.0)],
+///     &[Point2::new(0.0f32, 0.0), Point2::new(0.0, 0.1), Point2::new(1.0, 1.0)],
 ///     false,
 ///     &mut o,
 /// );
@@ -196,8 +198,8 @@ pub fn line<F: Float + Trig + FromPrimitive>(
 ///     }
 /// );
 /// ```
-pub fn linear_path<F: Float + Trig + FromPrimitive>(
-    points: &[Point2D<F>],
+pub fn linear_path<F: RealNumber>(
+    points: &[Point2<F>],
     close: bool,
     o: &mut DrawOptions,
 ) -> OpSet<F> {
@@ -244,33 +246,33 @@ pub fn linear_path<F: Float + Trig + FromPrimitive>(
     }
 }
 
-pub fn polygon<F: Float + Trig + FromPrimitive>(
-    points: &[Point2D<F>],
+pub fn polygon<F: RealNumber + FromPrimitive>(
+    points: &[Point2<F>],
     o: &mut DrawOptions,
 ) -> OpSet<F> {
     linear_path(points, true, o)
 }
 
-pub fn rectangle<F: Float + Trig + FromPrimitive>(
+pub fn rectangle<F: RealNumber + FromPrimitive>(
     x: F,
     y: F,
     width: F,
     height: F,
     o: &mut DrawOptions,
 ) -> OpSet<F> {
-    let points: Vec<Point2D<F>> = vec![
-        Point2D::new(x, y),
-        Point2D::new(x + width, y),
-        Point2D::new(x + width, y + height),
-        Point2D::new(x, y + height),
+    let points: Vec<Point2<F>> = vec![
+        Point2::new(x, y),
+        Point2::new(x + width, y),
+        Point2::new(x + width, y + height),
+        Point2::new(x, y + height),
     ];
     polygon(&points, o)
 }
 
-pub fn bezier_quadratic<F: Float + Trig + FromPrimitive>(
-    start: Point2D<F>,
-    cp: Point2D<F>,
-    end: Point2D<F>,
+pub fn bezier_quadratic<F: RealNumber + FromPrimitive>(
+    start: Point2<F>,
+    cp: Point2<F>,
+    end: Point2<F>,
     o: &mut DrawOptions,
 ) -> OpSet<F> {
     let ops = _bezier_quadratic_to(cp.x, cp.y, end.x, end.y, &start, o);
@@ -283,11 +285,11 @@ pub fn bezier_quadratic<F: Float + Trig + FromPrimitive>(
     }
 }
 
-pub fn bezier_cubic<F: Float + Trig + FromPrimitive>(
-    start: Point2D<F>,
-    cp1: Point2D<F>,
-    cp2: Point2D<F>,
-    end: Point2D<F>,
+pub fn bezier_cubic<F: RealNumber + FromPrimitive>(
+    start: Point2<F>,
+    cp1: Point2<F>,
+    cp2: Point2<F>,
+    end: Point2<F>,
     o: &mut DrawOptions,
 ) -> OpSet<F> {
     let ops = _bezier_to(cp1.x, cp1.y, cp2.x, cp2.y, end.x, end.y, &start, o);
@@ -300,8 +302,8 @@ pub fn bezier_cubic<F: Float + Trig + FromPrimitive>(
     }
 }
 
-pub fn curve<F: Float + Trig + FromPrimitive>(
-    points: &[Point2D<F>],
+pub fn curve<F: RealNumber + FromPrimitive>(
+    points: &[Point2<F>],
     o: &mut DrawOptions,
 ) -> OpSet<F> {
     let mut o1 = _curve_with_offset(
@@ -325,7 +327,7 @@ pub fn curve<F: Float + Trig + FromPrimitive>(
     }
 }
 
-pub fn ellipse<F: Float + Trig + FromPrimitive>(
+pub fn ellipse<F: RealNumber + FromPrimitive>(
     x: F,
     y: F,
     width: F,
@@ -336,32 +338,32 @@ pub fn ellipse<F: Float + Trig + FromPrimitive>(
     ellipse_with_params(x, y, o, &params).opset
 }
 
-pub fn generate_ellipse_params<F: Float + Trig + FromPrimitive>(
+pub fn generate_ellipse_params<F: RealNumber>(
     width: F,
     height: F,
     o: &mut DrawOptions,
 ) -> EllipseParams<F> {
-    let psq: F = Float::sqrt(
-        _c::<F>(f32::PI())
+    let psq: F = (
+        _c::<F>(3.14159)
             * _c(2.0)
-            * Float::sqrt(
-                (Float::powi(width / _c(2.0), 2) + Float::powi(height / _c(2.0), 2)) / _c(2.0),
-            ),
-    );
-    let step_count: F = Float::ceil(Float::max(
-        _c(o.curve_step_count.unwrap_or(1.0)),
-        _c::<F>(o.curve_step_count.unwrap_or(1.0) / Float::sqrt(200.0)) * psq,
-    ));
+            * (
+                ((width / _c(2.0)).powi(2) + (height / _c(2.0)).powi(2)) / _c(2.0)
+            ).sqrt()
+    ).sqrt();
+    let step_count: F = (
+        _c::<F>(o.curve_step_count.unwrap_or(1.0)).max(
+        _c::<F>(o.curve_step_count.unwrap_or(1.0) / 200.0.sqrt()) * psq,
+    )).ceil();
     let increment: F = (_c::<F>(f32::PI()) * _c(2.0)) / step_count;
-    let mut rx = Float::abs(width / _c(2.0));
-    let mut ry = Float::abs(height / _c(2.0));
+    let mut rx = (width / _c(2.0)).abs();
+    let mut ry = (height / _c(2.0)).abs();
     let curve_fit_randomness: F = _c::<F>(1.0) - _c(o.curve_fitting.unwrap_or(0.0));
     rx = rx + _offset_opt(rx * curve_fit_randomness, o, None);
     ry = ry + _offset_opt(ry * curve_fit_randomness, o, None);
     EllipseParams { increment, rx, ry }
 }
 
-pub fn ellipse_with_params<F: Float + Trig + FromPrimitive>(
+pub fn ellipse_with_params<F: RealNumber + FromPrimitive>(
     x: F,
     y: F,
     o: &mut DrawOptions,
@@ -413,7 +415,7 @@ pub fn ellipse_with_params<F: Float + Trig + FromPrimitive>(
     }
 }
 
-pub fn arc<F: Float + Trig + FromPrimitive>(
+pub fn arc<F: RealNumber + FromPrimitive>(
     x: F,
     y: F,
     width: F,
@@ -426,8 +428,8 @@ pub fn arc<F: Float + Trig + FromPrimitive>(
 ) -> OpSet<F> {
     let cx = x;
     let cy = y;
-    let mut rx = Float::abs(width / _c(2.0));
-    let mut ry = Float::abs(height / _c(2.0));
+    let mut rx = (width / _c(2.0)).abs();
+    let mut ry = (height / _c(2.0)).abs();
     rx = rx + _offset_opt(rx * _c(0.01), o, None);
     ry = ry + _offset_opt(ry * _c(0.01), o, None);
     let mut strt: F = start;
@@ -441,7 +443,7 @@ pub fn arc<F: Float + Trig + FromPrimitive>(
         stp = _c(f32::PI() * 2.0);
     }
     let ellipse_inc: F = _c::<F>(f32::PI() * 2.0) / _c(o.curve_step_count.unwrap_or(1.0));
-    let arc_inc = Float::min(ellipse_inc / _c(2.0), (stp - strt) / _c(2.0));
+    let arc_inc = (ellipse_inc / _c(2.0)).min((stp - strt) / _c(2.0));
     let mut ops = _arc(arc_inc, cx, cy, rx, ry, strt, stp, _c(1.0), o);
     if !o.disable_multi_stroke.unwrap_or(false) {
         let mut o2 = _arc(arc_inc, cx, cy, rx, ry, strt, stp, _c(1.5), o);
@@ -452,16 +454,16 @@ pub fn arc<F: Float + Trig + FromPrimitive>(
             ops.append(&mut _double_line(
                 cx,
                 cy,
-                cx + rx * Float::cos(strt),
-                cy + ry * Float::sin(strt),
+                cx + rx * strt.cos(),
+                cy + ry * strt.sin(),
                 o,
                 false,
             ));
             ops.append(&mut _double_line(
                 cx,
                 cy,
-                cx + rx * Float::cos(stp),
-                cy + ry * Float::sin(stp),
+                cx + rx * stp.cos(),
+                cy + ry * stp.sin(),
                 o,
                 false,
             ));
@@ -472,7 +474,7 @@ pub fn arc<F: Float + Trig + FromPrimitive>(
             });
             ops.push(Op {
                 op: OpType::LineTo,
-                data: vec![cx + rx * Float::cos(strt), cy + ry * Float::sin(strt)],
+                data: vec![cx + rx * strt.cos(), cy + ry * strt.sin()],
             });
         }
     }
@@ -484,8 +486,8 @@ pub fn arc<F: Float + Trig + FromPrimitive>(
     }
 }
 
-pub fn solid_fill_polygon<F: Float + Trig + FromPrimitive>(
-    polygon_list: &Vec<Vec<Point2D<F>>>,
+pub fn solid_fill_polygon<F: RealNumber>(
+    polygon_list: &Vec<Vec<Point2<F>>>,
     options: &mut DrawOptions,
 ) -> OpSet<F> {
     let mut ops = vec![];
@@ -521,11 +523,11 @@ pub fn solid_fill_polygon<F: Float + Trig + FromPrimitive>(
     }
 }
 
-pub fn rand_offset<F: Float + Trig + FromPrimitive>(x: F, o: &mut DrawOptions) -> F {
+pub fn rand_offset<F: RealNumber>(x: F, o: &mut DrawOptions) -> F {
     _offset_opt(x, o, None)
 }
 
-pub fn rand_offset_with_range<F: Float + Trig + FromPrimitive>(
+pub fn rand_offset_with_range<F: RealNumber>(
     min: F,
     max: F,
     o: &mut DrawOptions,
@@ -533,7 +535,7 @@ pub fn rand_offset_with_range<F: Float + Trig + FromPrimitive>(
     _offset(min, max, o, None)
 }
 
-pub fn double_line_fill_ops<F: Float + Trig + FromPrimitive>(
+pub fn double_line_fill_ops<F: RealNumber + FromPrimitive>(
     x1: F,
     y1: F,
     x2: F,
@@ -551,7 +553,7 @@ fn clone_options_alter_seed(ops: &mut DrawOptions) -> DrawOptions {
     result
 }
 
-fn _offset<F: Float + Trig + FromPrimitive>(
+fn _offset<F: RealNumber>(
     min: F,
     max: F,
     ops: &mut DrawOptions,
@@ -563,7 +565,7 @@ fn _offset<F: Float + Trig + FromPrimitive>(
         * ((_c::<F>(ops.random() as f32) * (max - min)) + min)
 }
 
-fn _offset_opt<F: Float + Trig + FromPrimitive>(
+fn _offset_opt<F: RealNumber>(
     x: F,
     ops: &mut DrawOptions,
     roughness_gain: Option<F>,
@@ -571,7 +573,7 @@ fn _offset_opt<F: Float + Trig + FromPrimitive>(
     _offset(-x, x, ops, roughness_gain)
 }
 
-fn _line_add_ops<F: Float + Trig + FromPrimitive>(
+fn _line_add_ops<F: RealNumber>(
     x1: F,
     y1: F,
     x2: F,
@@ -644,7 +646,7 @@ fn _line_add_ops<F: Float + Trig + FromPrimitive>(
     ops
 }
 
-fn _line<F: Float + Trig + FromPrimitive>(
+fn _line<F: RealNumber + FromPrimitive>(
     x1: F,
     y1: F,
     x2: F,
@@ -695,7 +697,7 @@ fn _line<F: Float + Trig + FromPrimitive>(
     )
 }
 
-pub(crate) fn _double_line<F: Float + Trig + FromPrimitive>(
+pub(crate) fn _double_line<F: RealNumber + FromPrimitive>(
     x1: F,
     y1: F,
     x2: F,
@@ -718,9 +720,9 @@ pub(crate) fn _double_line<F: Float + Trig + FromPrimitive>(
     }
 }
 
-pub(crate) fn _curve<F: Float + Trig + FromPrimitive>(
-    points: &[Point2D<F>],
-    close_point: Option<Point2D<F>>,
+pub(crate) fn _curve<F: RealNumber + FromPrimitive>(
+    points: &[Point2<F>],
+    close_point: Option<Point2<F>>,
     o: &mut DrawOptions,
 ) -> Vec<Op<F>> {
     let len = points.len();
@@ -790,29 +792,29 @@ pub(crate) fn _curve<F: Float + Trig + FromPrimitive>(
     ops
 }
 
-fn _curve_with_offset<F: Float + Trig + FromPrimitive>(
-    points: &[Point2D<F>],
+fn _curve_with_offset<F: RealNumber + FromPrimitive>(
+    points: &[Point2<F>],
     offset: F,
     o: &mut DrawOptions,
 ) -> Vec<Op<F>> {
-    let mut ps: Vec<Point2D<F>> = vec![
-        Point2D::new(
+    let mut ps: Vec<Point2<F>> = vec![
+        Point2::new(
             points[0].x + _offset_opt(offset, o, None),
             points[0].y + _offset_opt(offset, o, None),
         ),
-        Point2D::new(
+        Point2::new(
             points[0].x + _offset_opt(offset, o, None),
             points[0].y + _offset_opt(offset, o, None),
         ),
     ];
     let mut i = 1;
     while i < points.len() {
-        ps.push(Point2D::new(
+        ps.push(Point2::new(
             points[i].x + _offset_opt(offset, o, None),
             points[i].y + _offset_opt(offset, o, None),
         ));
         if i == (points.len() - 1) {
-            ps.push(Point2D::new(
+            ps.push(Point2::new(
                 points[i].x + _offset_opt(offset, o, None),
                 points[i].y + _offset_opt(offset, o, None),
             ));
@@ -822,7 +824,7 @@ fn _curve_with_offset<F: Float + Trig + FromPrimitive>(
     _curve(&ps, None, o)
 }
 
-pub(crate) fn _compute_ellipse_points<F: Float + Trig + FromPrimitive>(
+pub(crate) fn _compute_ellipse_points<F: RealNumber>(
     increment: F,
     cx: F,
     cy: F,
@@ -831,86 +833,86 @@ pub(crate) fn _compute_ellipse_points<F: Float + Trig + FromPrimitive>(
     offset: F,
     overlap: F,
     o: &mut DrawOptions,
-) -> Vec<Vec<Point2D<F>>> {
+) -> Vec<Vec<Point2<F>>> {
     let core_only = o.roughness.unwrap_or(0.0) == 0.0;
-    let mut core_points: Vec<Point2D<F>> = Vec::new();
-    let mut all_points: Vec<Point2D<F>> = Vec::new();
+    let mut core_points: Vec<Point2<F>> = Vec::new();
+    let mut all_points: Vec<Point2<F>> = Vec::new();
 
     if core_only {
         // Smooth edge
         let increment_inner = increment / _c(4.0);
-        all_points.push(Point2D::new(
-            cx + rx * Float::cos(-increment_inner),
-            cy + ry * Float::sin(-increment_inner),
+        all_points.push(Point2::new(
+            cx + rx * (-increment_inner).cos(),
+            cy + ry * (-increment_inner).sin(),
         ));
 
-        let mut angle = _c(0.0);
+        let mut angle = _c::<F>(0.0);
         while angle <= _c(f32::PI() * 2.0) {
-            let p = Point2D::new(cx + rx * Float::cos(angle), cy + ry * Float::sin(angle));
+            let p = Point2::new(cx + rx * angle.cos(), cy + ry * angle.sin());
             core_points.push(p);
             all_points.push(p);
             angle = angle + increment_inner;
         }
-        all_points.push(Point2D::new(
-            cx + rx * Float::cos(_c(0.0)),
-            cy + ry * Float::sin(_c(0.0)),
+        all_points.push(Point2::new(
+            cx + rx * (_c::<F>(0.0)).cos(),
+            cy + ry * (_c::<F>(0.0)).sin(),
         ));
-        all_points.push(Point2D::new(
-            cx + rx * Float::cos(increment_inner),
-            cy + ry * Float::sin(increment_inner),
+        all_points.push(Point2::new(
+            cx + rx * increment_inner.cos(),
+            cy + ry * increment_inner.sin(),
         ));
     } else {
         // Rough edge
         let rad_offset: F = _offset_opt::<F>(_c(0.5), o, None) - (_c::<F>(f32::PI()) / _c(2.0));
-        all_points.push(Point2D::new(
+        all_points.push(Point2::new(
             _offset_opt(offset, o, None)
                 + cx
-                + _c::<F>(0.9) * rx * Float::cos(rad_offset - increment),
+                + _c::<F>(0.9) * rx * (rad_offset - increment).cos(),
             _offset_opt(offset, o, None)
                 + cy
-                + _c::<F>(0.9) * ry * Float::sin(rad_offset - increment),
+                + _c::<F>(0.9) * ry * (rad_offset - increment).sin(),
         ));
         let end_angle = _c::<F>(f32::PI()) * _c(2.0) + rad_offset - _c(0.01);
         let mut angle = rad_offset;
         while angle < end_angle {
-            let p = Point2D::new(
-                _offset_opt(offset, o, None) + cx + rx * Float::cos(angle),
-                _offset_opt(offset, o, None) + cy + ry * Float::sin(angle),
+            let p = Point2::new(
+                _offset_opt(offset, o, None) + cx + rx * angle.cos(),
+                _offset_opt(offset, o, None) + cy + ry * angle.sin(),
             );
             core_points.push(p);
             all_points.push(p);
             angle = angle + increment;
         }
 
-        all_points.push(Point2D::new(
+        all_points.push(Point2::new(
             _offset_opt(offset, o, None)
                 + cx
-                + rx * Float::cos(rad_offset + _c::<F>(f32::PI()) * _c(2.0) + overlap * _c(0.5)),
+                + rx * (rad_offset + _c::<F>(f32::PI()) * _c(2.0) + overlap * _c(0.5)).cos(),
             _offset_opt(offset, o, None)
                 + cy
-                + ry * Float::sin(rad_offset + _c::<F>(f32::PI()) * _c(2.0) + overlap * _c(0.5)),
+                + ry * (rad_offset + _c::<F>(f32::PI()) * _c(2.0) + overlap * _c(0.5)).sin(),
         ));
-        all_points.push(Point2D::new(
+        all_points.push(Point2::new(
             _offset_opt(offset, o, None)
                 + cx
-                + _c::<F>(0.98) * rx * Float::cos(rad_offset + overlap),
+                + _c::<F>(0.98) * rx * (rad_offset + overlap).cos(),
             _offset_opt(offset, o, None)
                 + cy
-                + _c::<F>(0.98) * ry * Float::sin(rad_offset + overlap),
+                + _c::<F>(0.98) * ry * (rad_offset + overlap).sin(),
         ));
-        all_points.push(Point2D::new(
+        all_points.push(Point2::new(
             _offset_opt(offset, o, None)
                 + cx
-                + _c::<F>(0.9) * rx * Float::cos(rad_offset + overlap * _c(0.5)),
+                + _c::<F>(0.9) * rx * (rad_offset + overlap * _c(0.5)).cos(),
             _offset_opt(offset, o, None)
                 + cy
-                + _c::<F>(0.9) * ry * Float::sin(rad_offset + overlap * _c(0.5)),
+                + _c::<F>(0.9) * ry * (rad_offset + overlap * _c(0.5)).sin(),
         ));
     }
     vec![all_points, core_points]
 }
 
-fn _arc<F: Float + Trig + FromPrimitive>(
+fn _arc<F: RealNumber + FromPrimitive>(
     increment: F,
     cx: F,
     cy: F,
@@ -922,43 +924,43 @@ fn _arc<F: Float + Trig + FromPrimitive>(
     o: &mut DrawOptions,
 ) -> Vec<Op<F>> {
     let rad_offset = strt + _offset_opt(_c(0.1), o, None);
-    let mut points: Vec<Point2D<F>> = vec![Point2D::new(
-        _offset_opt(offset, o, None) + cx + _c::<F>(0.9) * rx * Float::cos(rad_offset - increment),
-        _offset_opt(offset, o, None) + cy + _c::<F>(0.9) * ry * Float::sin(rad_offset - increment),
+    let mut points: Vec<Point2<F>> = vec![Point2::new(
+        _offset_opt(offset, o, None) + cx + _c::<F>(0.9) * rx * (rad_offset - increment).cos(),
+        _offset_opt(offset, o, None) + cy + _c::<F>(0.9) * ry * (rad_offset - increment).sin(),
     )];
     let mut angle = rad_offset;
     while angle <= stp {
-        points.push(Point2D::new(
-            _offset_opt(offset, o, None) + cx + rx * Float::cos(angle),
-            _offset_opt(offset, o, None) + cy + ry * Float::sin(angle),
+        points.push(Point2::new(
+            _offset_opt(offset, o, None) + cx + rx * angle.cos(),
+            _offset_opt(offset, o, None) + cy + ry * angle.sin(),
         ));
         angle = angle + increment;
     }
-    points.push(Point2D::new(
-        cx + rx * Float::cos(stp),
-        cy + ry * Float::sin(stp),
+    points.push(Point2::new(
+        cx + rx * stp.cos(),
+        cy + ry * stp.sin(),
     ));
-    points.push(Point2D::new(
-        cx + rx * Float::cos(stp),
-        cy + ry * Float::sin(stp),
+    points.push(Point2::new(
+        cx + rx * stp.cos(),
+        cy + ry * stp.sin(),
     ));
     _curve(&points, None, o)
 }
 
-fn _bezier_quadratic_to<F: Float + Trig + FromPrimitive>(
+fn _bezier_quadratic_to<F: RealNumber + FromPrimitive>(
     x1: F,
     y1: F,
     x: F,
     y: F,
-    current: &Point2D<F>,
+    current: &Point2<F>,
     o: &mut DrawOptions,
 ) -> Vec<Op<F>> {
     // We simply convert the quadratic to a cubic bezier
 
     let cubic = convert_bezier_quadratic_to_cubic(BezierQuadratic {
         start: *current,
-        cp: Point2D::new(x1, y1),
-        end: Point2D::new(x, y),
+        cp: Point2::new(x1, y1),
+        end: Point2::new(x, y),
     });
 
     _bezier_to(
@@ -973,14 +975,14 @@ fn _bezier_quadratic_to<F: Float + Trig + FromPrimitive>(
     )
 }
 
-fn _bezier_to<F: Float + Trig + FromPrimitive>(
+fn _bezier_to<F: RealNumber + FromPrimitive>(
     x1: F,
     y1: F,
     x2: F,
     y2: F,
     x: F,
     y: F,
-    current: &Point2D<F>,
+    current: &Point2<F>,
     o: &mut DrawOptions,
 ) -> Vec<Op<F>> {
     let mut ops: Vec<Op<F>> = Vec::new();
@@ -988,7 +990,7 @@ fn _bezier_to<F: Float + Trig + FromPrimitive>(
         _c(o.max_randomness_offset.unwrap_or(2.0)),
         _c(o.max_randomness_offset.unwrap_or(2.0) + 0.3),
     ];
-    let mut f: Point2D<F>;
+    let mut f: Point2<F>;
     let iterations = if o.disable_multi_stroke.unwrap_or(false) {
         1
     } else {
@@ -1022,9 +1024,9 @@ fn _bezier_to<F: Float + Trig + FromPrimitive>(
             });
         }
         f = if preserve_vertices {
-            Point2D::new(x, y)
+            Point2::new(x, y)
         } else {
-            Point2D::new(
+            Point2::new(
                 x + _offset_opt(ros[i], o, None),
                 y + _offset_opt(ros[i], o, None),
             )
@@ -1047,8 +1049,8 @@ fn _bezier_to<F: Float + Trig + FromPrimitive>(
 
 pub fn pattern_fill_polygons<F, P>(polygon_list: P, o: &mut DrawOptions) -> OpSet<F>
 where
-    F: Float + Trig + FromPrimitive,
-    P: BorrowMut<Vec<Vec<Point2D<F>>>>,
+    F: RealNumber,
+    P: BorrowMut<Vec<Vec<Point2<F>>>>,
 {
     let filler = if let Some(fill_style) = o.fill_style.as_ref() {
         match fill_style {
@@ -1076,12 +1078,12 @@ pub fn pattern_fill_arc<F>(
     o: &mut DrawOptions,
 ) -> OpSet<F>
 where
-    F: Float + FromPrimitive + Trig,
+    F: RealNumber + FromPrimitive,
 {
     let cx = x;
     let cy = y;
-    let mut rx = F::abs(width / _c(2.0));
-    let mut ry = F::abs(height / _c(2.0));
+    let mut rx = (width / _c(2.0)).abs();
+    let mut ry = (height / _c(2.0)).abs();
 
     rx = rx + _offset_opt(rx * _c(0.01), o, None);
     ry = ry + _offset_opt(ry * _c(0.01), o, None);
@@ -1101,30 +1103,30 @@ where
     }
 
     let increment = (stp / strt) / o.curve_step_count.map(|a| _c(a)).unwrap_or_else(|| _c(1.0));
-    let mut points: Vec<Point2D<F>> = vec![];
+    let mut points: Vec<Point2<F>> = vec![];
 
     let mut angle = strt;
 
     while angle <= stp {
-        points.push(point2(
-            cx + rx * Float::cos(angle),
-            cy + ry * Float::sin(angle),
+        points.push(Point2::new(
+            cx + rx * angle.cos(),
+            cy + ry * angle.sin(),
         ));
         angle = angle + increment;
     }
 
-    points.push(point2(cx + rx * Float::cos(stp), cy + ry * Float::sin(stp)));
-    points.push(point2(cx, cy));
+    points.push(Point2::new(cx + rx * stp.cos(), cy + ry * stp.sin()));
+    points.push(Point2::new(cx, cy));
     pattern_fill_polygons(vec![points], o)
 }
 
 pub fn svg_path<F>(path: String, o: &mut DrawOptions) -> OpSet<F>
 where
-    F: Float + FromPrimitive + Trig,
+    F: RealNumber + FromPrimitive,
 {
     let mut ops = vec![];
-    let mut first = Point2D::new(_c::<F>(0.0), _c::<F>(0.0));
-    let mut current = Point2D::new(_c::<F>(0.0), _c::<F>(0.0));
+    let mut first = Point2::new(_c::<F>(0.0), _c::<F>(0.0));
+    let mut current = Point2::new(_c::<F>(0.0), _c::<F>(0.0));
     let path_parser = PathParser::from(path.as_ref());
     let path_segments: Vec<PathSegment> = path_parser.flatten().collect();
     let mut normalized_segments = normalize(absolutize(path_segments.iter()));
@@ -1151,8 +1153,8 @@ where
                         },
                     ],
                 });
-                current = Point2D::new(_cc::<F>(x), _cc::<F>(y));
-                first = Point2D::new(_cc::<F>(x), _cc::<F>(y));
+                current = Point2::new(_cc::<F>(x), _cc::<F>(y));
+                first = Point2::new(_cc::<F>(x), _cc::<F>(y));
             }
             PathSegment::LineTo { abs: true, x, y } => {
                 ops.extend(_double_line(
@@ -1163,7 +1165,7 @@ where
                     o,
                     false,
                 ));
-                current = Point2D::new(_cc::<F>(x), _cc::<F>(y));
+                current = Point2::new(_cc::<F>(x), _cc::<F>(y));
             }
             PathSegment::CurveTo {
                 abs: true,
@@ -1184,13 +1186,13 @@ where
                     &current,
                     o,
                 ));
-                current = Point2D::new(_cc::<F>(x), _cc::<F>(y));
+                current = Point2::new(_cc::<F>(x), _cc::<F>(y));
             }
             PathSegment::ClosePath { abs: true } => {
                 ops.extend(_double_line(
                     current.x, current.y, first.x, first.y, o, false,
                 ));
-                current = Point2D::new(first.x, first.y);
+                current = Point2::new(first.x, first.y);
             }
             _ => panic!("Unexpected segment type"),
         }
@@ -1205,7 +1207,8 @@ where
 
 #[cfg(test)]
 mod test {
-    use euclid::point2;
+    // use euclid::point2;
+    use nalgebra::Point2;
     use plotlib::page::Page;
     use plotlib::repr::Plot;
     use plotlib::style::{PointMarker, PointStyle};
@@ -1225,7 +1228,7 @@ mod test {
     #[test]
     fn linear_path() {
         let result = super::linear_path(
-            &[point2(0.0f32, 0.0), point2(0.0, 0.1), point2(1.0, 1.0)],
+            &[Point2::new(0.0f32, 0.0), Point2::new(0.0, 0.1), Point2::new(1.0, 1.0)],
             false,
             &mut get_default_options(),
         );
@@ -1291,15 +1294,15 @@ mod test {
     #[ignore = "failing due to randomness"]
     fn ellipse_with_params() {
         let expected_estimated_points = vec![
-            point2(0.6818724507954145, -0.24215675845215262),
-            point2(1.3682071413206485, 0.7930465114686116),
-            point2(1.9097816708676238, 0.7671100939304721),
-            point2(0.8360414855920169, 1.5122198080140175),
-            point2(0.531355187897985, 0.4738367335276372),
-            point2(1.111026909625053, 1.3449538537307408),
-            point2(1.1040092949849214, 1.801902725957649),
-            point2(0.4258957275631308, 1.2442749714336163),
-            point2(0.5661545950654607, 0.6328000056262721),
+            Point2::new(0.6818724507954145, -0.24215675845215262),
+            Point2::new(1.3682071413206485, 0.7930465114686116),
+            Point2::new(1.9097816708676238, 0.7671100939304721),
+            Point2::new(0.8360414855920169, 1.5122198080140175),
+            Point2::new(0.531355187897985, 0.4738367335276372),
+            Point2::new(1.111026909625053, 1.3449538537307408),
+            Point2::new(1.1040092949849214, 1.801902725957649),
+            Point2::new(0.4258957275631308, 1.2442749714336163),
+            Point2::new(0.5661545950654607, 0.6328000056262721),
         ];
 
         let result = super::ellipse_with_params(
@@ -1321,138 +1324,138 @@ mod test {
     fn compute_ellipse_points() {
         let expected = vec![
             vec![
-                point2(1.0710641633603797, 0.6343339196221436),
-                point2(0.9888360341310736, 0.539884571860436),
-                point2(1.0423582717058324, 0.48447611636004245),
-                point2(1.1323647757131408, 0.48734422393942145),
-                point2(1.097114022520837, 0.5024772415343248),
-                point2(1.1983573886194598, 0.6344444071433158),
-                point2(1.2951674832143851, 0.641832264291391),
-                point2(1.3536023670520665, 0.6251662974163592),
-                point2(1.2548224121208582, 0.6352429012560402),
-                point2(1.3489034470987185, 0.6012739292011288),
-                point2(1.4213037554602923, 0.6261652440563298),
-                point2(1.4743145534688815, 0.7882156278963534),
-                point2(1.4700412486188879, 0.8875515790754055),
-                point2(1.4460278644836544, 0.8456185823210882),
-                point2(1.4868741833172523, 0.9079833740096543),
-                point2(1.4920518492387598, 0.9095078637143422),
-                point2(1.5595453417691338, 0.9901532598343071),
-                point2(1.5936742539308373, 1.0213282325299586),
-                point2(1.58058656655406, 1.17305000017827),
-                point2(1.4480254616492774, 1.0928279018210438),
-                point2(1.4539640114348549, 1.144388265648967),
-                point2(1.3648317202407696, 1.2212937832283584),
-                point2(1.4733929772805416, 1.2083669884937012),
-                point2(1.3608398097214693, 1.3207579529041924),
-                point2(1.2912648851735424, 1.4205716705529399),
-                point2(1.2046625302840053, 1.3826569437709715),
-                point2(1.2570442078920254, 1.3410441079145428),
-                point2(1.1830529369693072, 1.3820810903226886),
-                point2(1.167072937591176, 1.4466053111301487),
-                point2(1.0852661499741054, 1.55951044347548),
-                point2(1.0494466853794846, 1.5479828315241733),
-                point2(1.0033271419673007, 1.468194659125039),
-                point2(0.9484890618160645, 1.4530640355956308),
-                point2(0.9973592789218273, 1.45324593604413),
-                point2(0.97187677594751, 1.5815631933148016),
-                point2(0.8144204755613362, 1.3782837410393232),
-                point2(0.7950961543969257, 1.444409277208105),
-                point2(0.8249520184490917, 1.3374139622566115),
-                point2(0.6758412677442227, 1.334436082917169),
-                point2(0.64368867956175, 1.3618188433767497),
-                point2(0.5445160170270017, 1.2507819758003385),
-                point2(0.5261266184295889, 1.290024044761643),
-                point2(0.502690056479149, 1.236879918084129),
-                point2(0.5280669233268998, 1.1091277406960698),
-                point2(0.4827538350322879, 1.1436496314081661),
-                point2(0.5883382268183734, 1.175168641400803),
-                point2(0.44736030622371087, 1.018503357084688),
-                point2(0.5448981202541112, 0.9143727174667883),
-                point2(0.4317760080261111, 1.051488996664834),
-                point2(0.5085207904485967, 0.9331170328373988),
-                point2(0.6001478439304737, 0.8979301783503268),
-                point2(0.4373488434812126, 0.723669324069054),
-                point2(0.48379460068391017, 0.6896668054813503),
-                point2(0.5802149727260961, 0.6326489019654757),
-                point2(0.5318481024591232, 0.6672519961193484),
-                point2(0.6267954168946062, 0.6264453502200538),
-                point2(0.7244414827901777, 0.6742999823788176),
-                point2(0.7409838872007461, 0.5515230198623486),
-                point2(0.7461775341290393, 0.6232380086449496),
-                point2(0.9055915299113261, 0.5326254191949538),
-                point2(0.9510466807539406, 0.49366667559390653),
-                point2(0.8116223593436764, 0.4695463357704083),
-                point2(0.8528118040757474, 0.4635000250267341),
-                point2(0.9141212396595003, 0.40460067972212826),
-                point2(1.003267583900141, 0.5351889587671019),
-                point2(1.0320189898300267, 0.6060923051759772),
-                point2(1.0784925820514744, 0.5016457530039365),
+                Point2::new(1.0710641633603797, 0.6343339196221436),
+                Point2::new(0.9888360341310736, 0.539884571860436),
+                Point2::new(1.0423582717058324, 0.48447611636004245),
+                Point2::new(1.1323647757131408, 0.48734422393942145),
+                Point2::new(1.097114022520837, 0.5024772415343248),
+                Point2::new(1.1983573886194598, 0.6344444071433158),
+                Point2::new(1.2951674832143851, 0.641832264291391),
+                Point2::new(1.3536023670520665, 0.6251662974163592),
+                Point2::new(1.2548224121208582, 0.6352429012560402),
+                Point2::new(1.3489034470987185, 0.6012739292011288),
+                Point2::new(1.4213037554602923, 0.6261652440563298),
+                Point2::new(1.4743145534688815, 0.7882156278963534),
+                Point2::new(1.4700412486188879, 0.8875515790754055),
+                Point2::new(1.4460278644836544, 0.8456185823210882),
+                Point2::new(1.4868741833172523, 0.9079833740096543),
+                Point2::new(1.4920518492387598, 0.9095078637143422),
+                Point2::new(1.5595453417691338, 0.9901532598343071),
+                Point2::new(1.5936742539308373, 1.0213282325299586),
+                Point2::new(1.58058656655406, 1.17305000017827),
+                Point2::new(1.4480254616492774, 1.0928279018210438),
+                Point2::new(1.4539640114348549, 1.144388265648967),
+                Point2::new(1.3648317202407696, 1.2212937832283584),
+                Point2::new(1.4733929772805416, 1.2083669884937012),
+                Point2::new(1.3608398097214693, 1.3207579529041924),
+                Point2::new(1.2912648851735424, 1.4205716705529399),
+                Point2::new(1.2046625302840053, 1.3826569437709715),
+                Point2::new(1.2570442078920254, 1.3410441079145428),
+                Point2::new(1.1830529369693072, 1.3820810903226886),
+                Point2::new(1.167072937591176, 1.4466053111301487),
+                Point2::new(1.0852661499741054, 1.55951044347548),
+                Point2::new(1.0494466853794846, 1.5479828315241733),
+                Point2::new(1.0033271419673007, 1.468194659125039),
+                Point2::new(0.9484890618160645, 1.4530640355956308),
+                Point2::new(0.9973592789218273, 1.45324593604413),
+                Point2::new(0.97187677594751, 1.5815631933148016),
+                Point2::new(0.8144204755613362, 1.3782837410393232),
+                Point2::new(0.7950961543969257, 1.444409277208105),
+                Point2::new(0.8249520184490917, 1.3374139622566115),
+                Point2::new(0.6758412677442227, 1.334436082917169),
+                Point2::new(0.64368867956175, 1.3618188433767497),
+                Point2::new(0.5445160170270017, 1.2507819758003385),
+                Point2::new(0.5261266184295889, 1.290024044761643),
+                Point2::new(0.502690056479149, 1.236879918084129),
+                Point2::new(0.5280669233268998, 1.1091277406960698),
+                Point2::new(0.4827538350322879, 1.1436496314081661),
+                Point2::new(0.5883382268183734, 1.175168641400803),
+                Point2::new(0.44736030622371087, 1.018503357084688),
+                Point2::new(0.5448981202541112, 0.9143727174667883),
+                Point2::new(0.4317760080261111, 1.051488996664834),
+                Point2::new(0.5085207904485967, 0.9331170328373988),
+                Point2::new(0.6001478439304737, 0.8979301783503268),
+                Point2::new(0.4373488434812126, 0.723669324069054),
+                Point2::new(0.48379460068391017, 0.6896668054813503),
+                Point2::new(0.5802149727260961, 0.6326489019654757),
+                Point2::new(0.5318481024591232, 0.6672519961193484),
+                Point2::new(0.6267954168946062, 0.6264453502200538),
+                Point2::new(0.7244414827901777, 0.6742999823788176),
+                Point2::new(0.7409838872007461, 0.5515230198623486),
+                Point2::new(0.7461775341290393, 0.6232380086449496),
+                Point2::new(0.9055915299113261, 0.5326254191949538),
+                Point2::new(0.9510466807539406, 0.49366667559390653),
+                Point2::new(0.8116223593436764, 0.4695463357704083),
+                Point2::new(0.8528118040757474, 0.4635000250267341),
+                Point2::new(0.9141212396595003, 0.40460067972212826),
+                Point2::new(1.003267583900141, 0.5351889587671019),
+                Point2::new(1.0320189898300267, 0.6060923051759772),
+                Point2::new(1.0784925820514744, 0.5016457530039365),
             ],
             vec![
-                point2(0.9888360341310736, 0.539884571860436),
-                point2(1.0423582717058324, 0.48447611636004245),
-                point2(1.1323647757131408, 0.48734422393942145),
-                point2(1.097114022520837, 0.5024772415343248),
-                point2(1.1983573886194598, 0.6344444071433158),
-                point2(1.2951674832143851, 0.641832264291391),
-                point2(1.3536023670520665, 0.6251662974163592),
-                point2(1.2548224121208582, 0.6352429012560402),
-                point2(1.3489034470987185, 0.6012739292011288),
-                point2(1.4213037554602923, 0.6261652440563298),
-                point2(1.4743145534688815, 0.7882156278963534),
-                point2(1.4700412486188879, 0.8875515790754055),
-                point2(1.4460278644836544, 0.8456185823210882),
-                point2(1.4868741833172523, 0.9079833740096543),
-                point2(1.4920518492387598, 0.9095078637143422),
-                point2(1.5595453417691338, 0.9901532598343071),
-                point2(1.5936742539308373, 1.0213282325299586),
-                point2(1.58058656655406, 1.17305000017827),
-                point2(1.4480254616492774, 1.0928279018210438),
-                point2(1.4539640114348549, 1.144388265648967),
-                point2(1.3648317202407696, 1.2212937832283584),
-                point2(1.4733929772805416, 1.2083669884937012),
-                point2(1.3608398097214693, 1.3207579529041924),
-                point2(1.2912648851735424, 1.4205716705529399),
-                point2(1.2046625302840053, 1.3826569437709715),
-                point2(1.2570442078920254, 1.3410441079145428),
-                point2(1.1830529369693072, 1.3820810903226886),
-                point2(1.167072937591176, 1.4466053111301487),
-                point2(1.0852661499741054, 1.55951044347548),
-                point2(1.0494466853794846, 1.5479828315241733),
-                point2(1.0033271419673007, 1.468194659125039),
-                point2(0.9484890618160645, 1.4530640355956308),
-                point2(0.9973592789218273, 1.45324593604413),
-                point2(0.97187677594751, 1.5815631933148016),
-                point2(0.8144204755613362, 1.3782837410393232),
-                point2(0.7950961543969257, 1.444409277208105),
-                point2(0.8249520184490917, 1.3374139622566115),
-                point2(0.6758412677442227, 1.334436082917169),
-                point2(0.64368867956175, 1.3618188433767497),
-                point2(0.5445160170270017, 1.2507819758003385),
-                point2(0.5261266184295889, 1.290024044761643),
-                point2(0.502690056479149, 1.236879918084129),
-                point2(0.5280669233268998, 1.1091277406960698),
-                point2(0.4827538350322879, 1.1436496314081661),
-                point2(0.5883382268183734, 1.175168641400803),
-                point2(0.44736030622371087, 1.018503357084688),
-                point2(0.5448981202541112, 0.9143727174667883),
-                point2(0.4317760080261111, 1.051488996664834),
-                point2(0.5085207904485967, 0.9331170328373988),
-                point2(0.6001478439304737, 0.8979301783503268),
-                point2(0.4373488434812126, 0.723669324069054),
-                point2(0.48379460068391017, 0.6896668054813503),
-                point2(0.5802149727260961, 0.6326489019654757),
-                point2(0.5318481024591232, 0.6672519961193484),
-                point2(0.6267954168946062, 0.6264453502200538),
-                point2(0.7244414827901777, 0.6742999823788176),
-                point2(0.7409838872007461, 0.5515230198623486),
-                point2(0.7461775341290393, 0.6232380086449496),
-                point2(0.9055915299113261, 0.5326254191949538),
-                point2(0.9510466807539406, 0.49366667559390653),
-                point2(0.8116223593436764, 0.4695463357704083),
-                point2(0.8528118040757474, 0.4635000250267341),
-                point2(0.9141212396595003, 0.40460067972212826),
+                Point2::new(0.9888360341310736, 0.539884571860436),
+                Point2::new(1.0423582717058324, 0.48447611636004245),
+                Point2::new(1.1323647757131408, 0.48734422393942145),
+                Point2::new(1.097114022520837, 0.5024772415343248),
+                Point2::new(1.1983573886194598, 0.6344444071433158),
+                Point2::new(1.2951674832143851, 0.641832264291391),
+                Point2::new(1.3536023670520665, 0.6251662974163592),
+                Point2::new(1.2548224121208582, 0.6352429012560402),
+                Point2::new(1.3489034470987185, 0.6012739292011288),
+                Point2::new(1.4213037554602923, 0.6261652440563298),
+                Point2::new(1.4743145534688815, 0.7882156278963534),
+                Point2::new(1.4700412486188879, 0.8875515790754055),
+                Point2::new(1.4460278644836544, 0.8456185823210882),
+                Point2::new(1.4868741833172523, 0.9079833740096543),
+                Point2::new(1.4920518492387598, 0.9095078637143422),
+                Point2::new(1.5595453417691338, 0.9901532598343071),
+                Point2::new(1.5936742539308373, 1.0213282325299586),
+                Point2::new(1.58058656655406, 1.17305000017827),
+                Point2::new(1.4480254616492774, 1.0928279018210438),
+                Point2::new(1.4539640114348549, 1.144388265648967),
+                Point2::new(1.3648317202407696, 1.2212937832283584),
+                Point2::new(1.4733929772805416, 1.2083669884937012),
+                Point2::new(1.3608398097214693, 1.3207579529041924),
+                Point2::new(1.2912648851735424, 1.4205716705529399),
+                Point2::new(1.2046625302840053, 1.3826569437709715),
+                Point2::new(1.2570442078920254, 1.3410441079145428),
+                Point2::new(1.1830529369693072, 1.3820810903226886),
+                Point2::new(1.167072937591176, 1.4466053111301487),
+                Point2::new(1.0852661499741054, 1.55951044347548),
+                Point2::new(1.0494466853794846, 1.5479828315241733),
+                Point2::new(1.0033271419673007, 1.468194659125039),
+                Point2::new(0.9484890618160645, 1.4530640355956308),
+                Point2::new(0.9973592789218273, 1.45324593604413),
+                Point2::new(0.97187677594751, 1.5815631933148016),
+                Point2::new(0.8144204755613362, 1.3782837410393232),
+                Point2::new(0.7950961543969257, 1.444409277208105),
+                Point2::new(0.8249520184490917, 1.3374139622566115),
+                Point2::new(0.6758412677442227, 1.334436082917169),
+                Point2::new(0.64368867956175, 1.3618188433767497),
+                Point2::new(0.5445160170270017, 1.2507819758003385),
+                Point2::new(0.5261266184295889, 1.290024044761643),
+                Point2::new(0.502690056479149, 1.236879918084129),
+                Point2::new(0.5280669233268998, 1.1091277406960698),
+                Point2::new(0.4827538350322879, 1.1436496314081661),
+                Point2::new(0.5883382268183734, 1.175168641400803),
+                Point2::new(0.44736030622371087, 1.018503357084688),
+                Point2::new(0.5448981202541112, 0.9143727174667883),
+                Point2::new(0.4317760080261111, 1.051488996664834),
+                Point2::new(0.5085207904485967, 0.9331170328373988),
+                Point2::new(0.6001478439304737, 0.8979301783503268),
+                Point2::new(0.4373488434812126, 0.723669324069054),
+                Point2::new(0.48379460068391017, 0.6896668054813503),
+                Point2::new(0.5802149727260961, 0.6326489019654757),
+                Point2::new(0.5318481024591232, 0.6672519961193484),
+                Point2::new(0.6267954168946062, 0.6264453502200538),
+                Point2::new(0.7244414827901777, 0.6742999823788176),
+                Point2::new(0.7409838872007461, 0.5515230198623486),
+                Point2::new(0.7461775341290393, 0.6232380086449496),
+                Point2::new(0.9055915299113261, 0.5326254191949538),
+                Point2::new(0.9510466807539406, 0.49366667559390653),
+                Point2::new(0.8116223593436764, 0.4695463357704083),
+                Point2::new(0.8528118040757474, 0.4635000250267341),
+                Point2::new(0.9141212396595003, 0.40460067972212826),
             ],
         ];
         let result = _compute_ellipse_points(
@@ -1472,10 +1475,10 @@ mod test {
     fn curve() {
         let result = _curve(
             &[
-                point2(0.0, 0.0),
-                point2(1.0, 1.0),
-                point2(2.0, 0.0),
-                point2(-1.0, -1.0),
+                Point2::new(0.0, 0.0),
+                Point2::new(1.0, 1.0),
+                Point2::new(2.0, 0.0),
+                Point2::new(-1.0, -1.0),
             ],
             None,
             &mut get_default_options(),
