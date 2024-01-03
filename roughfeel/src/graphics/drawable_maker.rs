@@ -2,8 +2,10 @@ use std::fmt::{Display, Write};
 use std::marker::PhantomData;
 use std::ops::MulAssign;
 
-use euclid::default::Point2D;
-use euclid::Trig;
+use nalgebra::{Point2, Scalar};
+use nalgebra_glm::RealNumber;
+// use euclid::default::Point2D;
+// use euclid::Trig;
 use num_traits::{Float, FromPrimitive};
 use points_on_curve::{curve_to_bezier, points_on_bezier_curves};
 
@@ -23,7 +25,7 @@ pub struct Generator<OpSetT: OpSetTrait> {
     phantom_data_opsett: PhantomData<OpSetT>,
 }
 
-impl<F: Trig + Float, OpSetT: OpSetTrait<F = F>> Default for Generator<OpSetT> {
+impl<F: RealNumber, OpSetT: OpSetTrait<F = F>> Default for Generator<OpSetT> {
     fn default() -> Self {
         Self {
             default_options: DrawOptionsBuilder::default()
@@ -35,7 +37,7 @@ impl<F: Trig + Float, OpSetT: OpSetTrait<F = F>> Default for Generator<OpSetT> {
     }
 }
 
-impl<F: Trig + Float> Generator<OpSet<F>>
+impl<F: RealNumber> Generator<OpSet<F>>
 {
     pub fn new(options: DrawOptions) -> Self {
         Generator {
@@ -61,7 +63,7 @@ impl<F: Trig + Float> Generator<OpSet<F>>
 
     pub fn ops_to_path(mut drawing: OpSet<F>, fixed_decimals: Option<u32>) -> String
     where
-        F: Float + FromPrimitive + Trig + Display,
+        F: RealNumber + Display,
     {
         let mut path = String::new();
 
@@ -69,7 +71,7 @@ impl<F: Trig + Float> Generator<OpSet<F>>
             if let Some(fd) = fixed_decimals {
                 let pow: u32 = 10u32.pow(fd);
                 item.data.iter_mut().for_each(|p| {
-                    *p = (*p * F::from(pow).unwrap()).round() / F::from(pow).unwrap();
+                    *p = (*p * F::from_u32(pow).unwrap()).round() / F::from_u32(pow).unwrap();
                 });
             }
 
@@ -103,7 +105,7 @@ impl<F: Trig + Float> Generator<OpSet<F>>
 
     pub fn to_paths(drawable: RoughlyDrawable<OpSet<F>>) -> Vec<PathInfo>
     where
-        F: Float + FromPrimitive + Trig + Display,
+        F: RealNumber + FromPrimitive + Display,
     {
         let sets = drawable.opsets;
         let o = drawable.options;
@@ -143,7 +145,7 @@ impl<F: Trig + Float> Generator<OpSet<F>>
 }
 
 pub trait RoughlyDrawableMaker<
-    F: Trig + Float + FromPrimitive + MulAssign + Display,
+    F: RealNumber + FromPrimitive + MulAssign + Display,
     OpSetT,
     OutputDrawable,
 > where
@@ -190,14 +192,14 @@ pub trait RoughlyDrawableMaker<
 
     fn linear_path(
         &self,
-        points: &[Point2D<F>],
+        points: &[Point2<F>],
         close: bool,
         options: &Option<DrawOptions>,
     ) -> OutputDrawable;
 
     fn polygon(
         &self,
-        points: &[Point2D<F>],
+        points: &[Point2<F>],
         options: &Option<DrawOptions>
     ) -> OutputDrawable;
 
@@ -215,24 +217,24 @@ pub trait RoughlyDrawableMaker<
 
     fn bezier_quadratic(
         &self,
-        start: Point2D<F>,
-        cp: Point2D<F>,
-        end: Point2D<F>,
+        start: Point2<F>,
+        cp: Point2<F>,
+        end: Point2<F>,
         options: &Option<DrawOptions>,
     ) -> OutputDrawable;
 
     fn bezier_cubic(
         &self,
-        start: Point2D<F>,
-        cp1: Point2D<F>,
-        cp2: Point2D<F>,
-        end: Point2D<F>,
+        start: Point2<F>,
+        cp1: Point2<F>,
+        cp2: Point2<F>,
+        end: Point2<F>,
         options: &Option<DrawOptions>,
     ) -> OutputDrawable;
 
     fn curve(
         &self,
-        points: &[Point2D<F>],
+        points: &[Point2<F>],
         options: &Option<DrawOptions>
     ) -> OutputDrawable;
 
@@ -243,12 +245,12 @@ pub trait RoughlyDrawableMaker<
     ) -> OutputDrawable;
 }
 
-impl<F: Trig + Float + FromPrimitive + MulAssign + Display>
+impl<F: RealNumber + FromPrimitive + MulAssign + Display>
     RoughlyDrawableMaker<F, OpSet<F>, RoughlyDrawable<OpSet<F>>> for Generator<OpSet<F>>
 {
     fn line(&self, x1: F, y1: F, x2: F, y2: F, options: &Option<DrawOptions>) -> RoughlyDrawable<OpSet<F>>
     where
-        F: Float + Trig + FromPrimitive,
+        F: RealNumber + FromPrimitive,
     {
         let x = self.d(
             "line".to_owned(),
@@ -275,7 +277,7 @@ impl<F: Trig + Float + FromPrimitive + MulAssign + Display>
         options: &Option<DrawOptions>,
     ) -> RoughlyDrawable<OpSet<F>>
     where
-        F: Float + Trig + FromPrimitive,
+        F: RealNumber + FromPrimitive,
     {
         let mut paths = vec![];
         let mut options = options
@@ -284,10 +286,10 @@ impl<F: Trig + Float + FromPrimitive + MulAssign + Display>
         let outline = rectangle(x, y, width, height, &mut options);
         if options.fill.is_some() {
             let points = vec![
-                Point2D::new(x, y),
-                Point2D::new(x + width, y),
-                Point2D::new(x + width, y + height),
-                Point2D::new(x, y + height),
+                Point2::new(x, y),
+                Point2::new(x + width, y),
+                Point2::new(x + width, y + height),
+                Point2::new(x, y + height),
             ];
             if options.fill_style == Some(FillStyle::Solid) {
                 paths.push(solid_fill_polygon(&vec![points], &mut options));
@@ -311,7 +313,7 @@ impl<F: Trig + Float + FromPrimitive + MulAssign + Display>
         options: &Option<DrawOptions>,
     ) -> RoughlyDrawable<OpSet<F>>
     where
-        F: Float + Trig + FromPrimitive,
+        F: RealNumber + FromPrimitive,
     {
         let mut paths = vec![];
         let mut options = options
@@ -339,7 +341,7 @@ impl<F: Trig + Float + FromPrimitive + MulAssign + Display>
 
     fn circle(&self, x: F, y: F, diameter: F, options: &Option<DrawOptions>) -> RoughlyDrawable<OpSet<F>>
     where
-        F: Float + Trig + FromPrimitive,
+        F: RealNumber + FromPrimitive,
     {
         let mut shape = self.ellipse(x, y, diameter, diameter, options);
         shape.shape = "circle".into();
@@ -348,12 +350,12 @@ impl<F: Trig + Float + FromPrimitive + MulAssign + Display>
 
     fn linear_path(
         &self,
-        points: &[Point2D<F>],
+        points: &[Point2<F>],
         close: bool,
         options: &Option<DrawOptions>,
     ) -> RoughlyDrawable<OpSet<F>>
     where
-        F: Float + Trig + FromPrimitive,
+        F: RealNumber + FromPrimitive,
     {
         let mut options = options
             .clone()
@@ -377,7 +379,7 @@ impl<F: Trig + Float + FromPrimitive + MulAssign + Display>
         options: &Option<DrawOptions>,
     ) -> RoughlyDrawable<OpSet<F>>
     where
-        F: Float + Trig + FromPrimitive,
+        F: RealNumber + FromPrimitive,
     {
         let mut options = options
             .clone()
@@ -430,13 +432,13 @@ impl<F: Trig + Float + FromPrimitive + MulAssign + Display>
 
     fn bezier_quadratic(
         &self,
-        start: Point2D<F>,
-        cp: Point2D<F>,
-        end: Point2D<F>,
+        start: Point2<F>,
+        cp: Point2<F>,
+        end: Point2<F>,
         options: &Option<DrawOptions>,
     ) -> RoughlyDrawable<OpSet<F>>
     where
-        F: Float + Trig + FromPrimitive + MulAssign + Display,
+        F: RealNumber + FromPrimitive + MulAssign + Display,
     {
         let mut paths = vec![];
         let mut options = options
@@ -471,14 +473,14 @@ impl<F: Trig + Float + FromPrimitive + MulAssign + Display>
 
     fn bezier_cubic(
         &self,
-        start: Point2D<F>,
-        cp1: Point2D<F>,
-        cp2: Point2D<F>,
-        end: Point2D<F>,
+        start: Point2<F>,
+        cp1: Point2<F>,
+        cp2: Point2<F>,
+        end: Point2<F>,
         options: &Option<DrawOptions>,
     ) -> RoughlyDrawable<OpSet<F>>
     where
-        F: Float + Trig + FromPrimitive + MulAssign + Display,
+        F: RealNumber + FromPrimitive + MulAssign + Display,
     {
         let mut paths = vec![];
         let mut options = options
@@ -509,9 +511,9 @@ impl<F: Trig + Float + FromPrimitive + MulAssign + Display>
         self.d("curve".to_owned(), &paths, &Some(options))
     }
 
-    fn curve(&self, points: &[Point2D<F>], options: &Option<DrawOptions>) -> RoughlyDrawable<OpSet<F>>
+    fn curve(&self, points: &[Point2<F>], options: &Option<DrawOptions>) -> RoughlyDrawable<OpSet<F>>
     where
-        F: Float + Trig + FromPrimitive + MulAssign + Display,
+        F: RealNumber + Display,
     {
         let mut paths = vec![];
         let mut options = options
@@ -541,9 +543,9 @@ impl<F: Trig + Float + FromPrimitive + MulAssign + Display>
         self.d("curve".to_owned(), &paths, &Some(options))
     }
 
-    fn polygon(&self, points: &[Point2D<F>], options: &Option<DrawOptions>) -> RoughlyDrawable<OpSet<F>>
+    fn polygon(&self, points: &[Point2<F>], options: &Option<DrawOptions>) -> RoughlyDrawable<OpSet<F>>
     where
-        F: Float + Trig + FromPrimitive + MulAssign + Display,
+        F: RealNumber + FromPrimitive + MulAssign + Display,
     {
         let mut options = options
             .clone()
@@ -568,7 +570,7 @@ impl<F: Trig + Float + FromPrimitive + MulAssign + Display>
 
     fn path(&self, d: String, options: &Option<DrawOptions>) -> RoughlyDrawable<OpSet<F>>
     where
-        F: Float + Trig + FromPrimitive + MulAssign + Display,
+        F: RealNumber + FromPrimitive + MulAssign + Display,
     {
         let mut options = options.clone().unwrap_or(self.default_options.clone());
         let mut paths = vec![];

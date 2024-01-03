@@ -1,6 +1,6 @@
 use derive_builder::Builder;
-use euclid::default::Point2D;
-use euclid::Trig;
+use nalgebra::{Point2, Scalar};
+use nalgebra_glm::RealNumber;
 use num_traits::{Float, FromPrimitive};
 use palette::Srgba;
 use rand_chacha::{rand_core::block::BlockRngCore, ChaCha8Core};
@@ -9,7 +9,7 @@ use crate::graphics::drawable::DrawOptions;
 
 use crate::graphics::drawable_ops::{OpSet, OpSetType, OpType};
 
-pub struct Drawable2D<F: Float + Trig> {
+pub struct Drawable2D<F: RealNumber> {
     pub shape: String,
     pub options: DrawOptions,
     pub opsets: Vec<OpSet<F>>,

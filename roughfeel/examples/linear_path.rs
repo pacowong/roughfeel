@@ -3,7 +3,7 @@
 
 // extern crate roughfeel;
 
-use euclid::{default, Point2D};
+use nalgebra::Point2;
 use palette::Srgba;
 use piet::{Color, RenderContext};
 use piet_common::kurbo::Rect;
@@ -44,10 +44,10 @@ fn main() {
     );
     //::default{}; //Generator::<f32, f32, KurboOpSet<f32>>::new(options);//::default();//::new(options);
     let points = [
-        Point2D::new(0.0, HEIGHT as f32 / 2.0),
-        Point2D::new(WIDTH as f32 / 2.0, HEIGHT as f32),
-        Point2D::new(WIDTH as f32, HEIGHT as f32 / 2.0),
-        Point2D::new(WIDTH as f32 / 2.0, 0.0),
+        Point2::new(0.0, HEIGHT as f32 / 2.0),
+        Point2::new(WIDTH as f32 / 2.0, HEIGHT as f32),
+        Point2::new(WIDTH as f32, HEIGHT as f32 / 2.0),
+        Point2::new(WIDTH as f32 / 2.0, 0.0),
     ];
     let linear_path = generator.linear_path(&points, true, &Some(options));
     let background_color = Color::from_hex_str("96C0B7").unwrap();

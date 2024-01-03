@@ -1,7 +1,7 @@
 use std::borrow::BorrowMut;
 
-use euclid::default::Point2D;
-use euclid::Trig;
+use nalgebra::{Point2, Scalar};
+use nalgebra_glm::RealNumber;
 use num_traits::{Float, FromPrimitive};
 
 use self::dashed_filler::DashedFiller;
@@ -31,8 +31,8 @@ pub enum FillerType {
 
 pub fn get_filler<'a, F, P>(f: FillerType) -> Box<dyn PatternFiller<F, P> + 'a>
 where
-    F: Float + Trig + FromPrimitive + 'a,
-    P: BorrowMut<Vec<Vec<Point2D<F>>>>,
+    F: RealNumber + 'a,
+    P: BorrowMut<Vec<Vec<Point2<F>>>>,
 {
     match f {
         FillerType::ScanLineHachure => Box::new(ScanlineHachureFiller::new()),

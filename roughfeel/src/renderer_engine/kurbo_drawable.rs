@@ -1,6 +1,7 @@
 use std::fmt::Display;
 use std::ops::MulAssign;
 
+use crate::graphics::_to_f64;
 use crate::graphics::drawable::{DrawOptions, DrawOptionsBuilder, OpSetTrait, RoughlyDrawable};
 use palette::rgb::Rgba;
 use palette::Srgba;
@@ -9,25 +10,26 @@ use piet::{Color, LineJoin, RenderContext, StrokeStyle};
 
 use num_traits::{Float, FromPrimitive};
 
-use euclid::{default::Point2D, Trig};
+use nalgebra::{Point2, Scalar};
+use nalgebra_glm::RealNumber;
 
 use crate::graphics::drawable_ops::{OpSet, OpSetType, OpType};
 
 use crate::graphics::drawable::Drawable;
 
 #[derive(Clone)]
-pub struct KurboOpSet<F: Float + Trig> {
+pub struct KurboOpSet<F: RealNumber> {
     pub op_set_type: OpSetType,
     pub ops: BezPath,
-    pub size: Option<Point2D<F>>,
+    pub size: Option<Point2<F>>,
     pub path: Option<String>,
 }
 
-impl<F: Float + Trig> OpSetTrait for KurboOpSet<F> {
+impl<F: RealNumber> OpSetTrait for KurboOpSet<F> {
     type F = F;
 }
 
-pub struct KurboDrawable<F: Float + Trig> {
+pub struct KurboDrawable<F: RealNumber> {
     pub shape: String,
     pub options: DrawOptions,
     pub sets: Vec<KurboOpSet<F>>,
@@ -44,7 +46,7 @@ pub struct KurboDrawable<F: Float + Trig> {
 //     }
 // }
 
-impl<FT: Float + Trig> Drawable<KurboOpSet<FT>> for KurboDrawable<FT> {
+impl<FT: RealNumber> Drawable<KurboOpSet<FT>> for KurboDrawable<FT> {
     // type F = FT;
 
     // fn draw(
@@ -68,7 +70,7 @@ impl<FT: Float + Trig> Drawable<KurboOpSet<FT>> for KurboDrawable<FT> {
     }
 }
 
-impl<F: Float + Trig> KurboDrawable<F> {
+impl<F: RealNumber> KurboDrawable<F> {
     pub fn draw(&self, ctx: &mut impl RenderContext) {
         for set in self.sets.iter() {
             match set.op_set_type {
@@ -196,11 +198,11 @@ impl<F: Float + Trig> KurboDrawable<F> {
     }
 }
 
-pub trait ToKurboOpset<F: Float + Trig> {
+pub trait ToKurboOpset<F: RealNumber> {
     fn to_kurbo_opset(self) -> KurboOpSet<F>;
 }
 
-impl<F: Float + Trig + FromPrimitive> ToKurboOpset<F> for OpSet<F> {
+impl<F: RealNumber + FromPrimitive> ToKurboOpset<F> for OpSet<F> {
     fn to_kurbo_opset(self) -> KurboOpSet<F> {
         KurboOpSet {
             op_set_type: self.op_set_type.clone(),
@@ -211,32 +213,32 @@ impl<F: Float + Trig + FromPrimitive> ToKurboOpset<F> for OpSet<F> {
     }
 }
 
-fn opset_to_shape<F: Trig + Float + FromPrimitive>(op_set: &OpSet<F>) -> BezPath {
+fn opset_to_shape<F: RealNumber + FromPrimitive>(op_set: &OpSet<F>) -> BezPath {
     let mut path: BezPath = BezPath::new();
     for item in op_set.ops.iter() {
         match item.op {
             OpType::Move => path.extend([PathEl::MoveTo(Point::new(
-                item.data[0].to_f64().unwrap(),
-                item.data[1].to_f64().unwrap(),
+                _to_f64(item.data[0]),
+                _to_f64(item.data[1]),
             ))]),
             OpType::BCurveTo => path.extend([PathEl::CurveTo(
                 Point::new(
-                    item.data[0].to_f64().unwrap(),
-                    item.data[1].to_f64().unwrap(),
+                    _to_f64(item.data[0]),
+                    _to_f64(item.data[1]),
                 ),
                 Point::new(
-                    item.data[2].to_f64().unwrap(),
-                    item.data[3].to_f64().unwrap(),
+                    _to_f64(item.data[2]),
+                    _to_f64(item.data[3]),
                 ),
                 Point::new(
-                    item.data[4].to_f64().unwrap(),
-                    item.data[5].to_f64().unwrap(),
+                    _to_f64(item.data[4]),
+                    _to_f64(item.data[5]),
                 ),
             )]),
             OpType::LineTo => {
                 path.extend([PathEl::LineTo(Point::new(
-                    item.data[0].to_f64().unwrap(),
-                    item.data[1].to_f64().unwrap(),
+                    _to_f64(item.data[0]),
+                    _to_f64(item.data[1]),
                 ))]);
             }
         }
@@ -244,11 +246,11 @@ fn opset_to_shape<F: Trig + Float + FromPrimitive>(op_set: &OpSet<F>) -> BezPath
     path
 }
 
-pub trait ToKurboDrawable<F: Float + Trig> {
+pub trait ToKurboDrawable<F: RealNumber> {
     fn to_kurbo_drawable(self) -> KurboDrawable<F>;
 }
 
-impl<F: Float + Trig + FromPrimitive> ToKurboDrawable<F> for RoughlyDrawable<OpSet<F>> {
+impl<F: RealNumber + FromPrimitive> ToKurboDrawable<F> for RoughlyDrawable<OpSet<F>> {
     fn to_kurbo_drawable(self) -> KurboDrawable<F> {
         KurboDrawable {
             shape: self.shape,

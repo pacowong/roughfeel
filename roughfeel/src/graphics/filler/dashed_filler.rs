@@ -1,8 +1,9 @@
 use std::borrow::BorrowMut;
 use std::marker::PhantomData;
 
-use euclid::default::Point2D;
-use euclid::{point2, Trig};
+use nalgebra::{Point2, Scalar, Vector};
+use nalgebra_glm::RealNumber;
+// use euclid::{point2, Trig};
 use num_traits::{Float, FromPrimitive};
 
 use super::scan_line_hachure::polygon_hachure_lines;
@@ -19,8 +20,8 @@ pub struct DashedFiller<F> {
 
 impl<F, P> PatternFiller<F, P> for DashedFiller<F>
 where
-    F: Float + Trig + FromPrimitive,
-    P: BorrowMut<Vec<Vec<Point2D<F>>>>,
+    F: RealNumber,
+    P: BorrowMut<Vec<Vec<Point2<F>>>>,
 {
     fn fill_polygons(
         &self,
@@ -37,7 +38,7 @@ where
         }
     }
 }
-impl<'a, F: Float + Trig + FromPrimitive> DashedFiller<F> {
+impl<'a, F: RealNumber> DashedFiller<F> {
     pub fn new() -> Self {
         DashedFiller {
             _phantom: PhantomData,
@@ -84,20 +85,21 @@ impl<'a, F: Float + Trig + FromPrimitive> DashedFiller<F> {
                 p2 = line.start_point;
             }
             let alpha = ((p2.y - p1.y) / (p2.x - p1.x)).atan();
-            for i in 0..count.to_u32().unwrap() {
-                let lstart = F::from(i).unwrap() * (offset + gap);
+            let count: f64 = nalgebra::try_convert(count).unwrap(); //count.map.try_into().unwrap();
+            for i in 0..(count as u64) { //.try_into::<u32>::().to_u32().unwrap() {
+                let lstart = F::from_u64(i).unwrap() * (offset + gap); //F::from(i).unwrap() * (offset + gap);
                 let lend = lstart + offset;
-                let start: Point2D<F> = point2(
-                    p1.x + (lstart * num_traits::Float::cos(alpha))
-                        + (start_offset * num_traits::Float::cos(alpha)),
-                    p1.y + lstart * num_traits::Float::sin(alpha)
-                        + (start_offset * num_traits::Float::sin(alpha)),
+                let start = Point2::<F>::new(
+                    p1.x + (lstart * alpha.cos())
+                        + (start_offset * alpha.cos()),
+                    p1.y + lstart * alpha.sin()
+                        + (start_offset * alpha.sin()),
                 );
-                let end: Point2D<F> = point2(
-                    p1.x + (lend * num_traits::Float::cos(alpha))
-                        + (start_offset * num_traits::Float::cos(alpha)),
-                    p1.y + (lend * num_traits::Float::sin(alpha))
-                        + (start_offset * num_traits::Float::sin(alpha)),
+                let end = Point2::<F>::new(
+                    p1.x + (lend * alpha.cos())
+                        + (start_offset * alpha.cos()),
+                    p1.y + (lend * alpha.sin())
+                        + (start_offset * alpha.sin()),
                 );
                 let line_ops = _double_line(start.x, start.y, end.x, end.y, o, false);
                 ops.extend(line_ops);

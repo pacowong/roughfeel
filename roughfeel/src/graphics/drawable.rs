@@ -1,7 +1,9 @@
 use derive_builder::Builder;
 use rand::{random, Rng, SeedableRng};
 use rand_chacha::ChaCha8Rng;
-use euclid::Trig;
+use nalgebra::{Point2, Scalar};
+use nalgebra_glm::RealNumber;
+// use euclid::Trig;
 use num_traits::Float;
 use palette::Srgba;
 
@@ -151,12 +153,12 @@ impl DrawOptions {
 }
 
 pub trait OpSetTrait {
-    type F: Float + Trig;
+    type F: RealNumber;
 }
 
 pub trait Drawable<OpSetT: OpSetTrait>
 where
-    OpSetT::F: Float + Trig
+    OpSetT::F: RealNumber
 {
     // A drawable is a general concept for a graphic that can be drawn to the screen.
     fn draw(
@@ -168,14 +170,14 @@ where
 
 pub struct RoughlyDrawable<OpSetT: OpSetTrait> 
 where
-    OpSetT::F: Float + Trig, 
+    OpSetT::F: RealNumber, 
 {
     pub shape: String,
     pub options: DrawOptions,
     pub opsets: Vec<OpSetT>,
 }
 
-impl<AF: Float + Trig> Drawable<OpSet<AF>> for RoughlyDrawable<OpSet<AF>> {
+impl<AF: RealNumber> Drawable<OpSet<AF>> for RoughlyDrawable<OpSet<AF>> {
     fn draw(shape: String, options: DrawOptions, sets: Vec<OpSet<AF>>) -> RoughlyDrawable<OpSet<AF>> {
         Self {
             shape: shape.into(),

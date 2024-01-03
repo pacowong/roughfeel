@@ -2,7 +2,8 @@ use std::{fmt::Display, ops::MulAssign};
 
 use num_traits::{Float, FromPrimitive};
 
-use euclid::{default::Point2D, Trig};
+use nalgebra::{Point2, Scalar};
+use nalgebra_glm::RealNumber;
 
 use crate::graphics::{
     drawable::{DrawOptions, Drawable},
@@ -16,7 +17,7 @@ use std::marker::PhantomData;
 
 #[derive(Default)]
 pub struct KurboDrawableMaker<
-    F: Trig + Float + FromPrimitive + MulAssign + Display,
+    F: RealNumber + Display,
     OutputDrawable: Drawable<KurboOpSet<F>>,
 > {
     gen: Generator<OpSet<F>>,
@@ -24,7 +25,7 @@ pub struct KurboDrawableMaker<
     phantom_data_output_drawable: PhantomData<OutputDrawable>,
 }
 
-impl<F: Float + Trig + FromPrimitive + MulAssign + Display,
+impl<F: RealNumber + FromPrimitive + MulAssign + Display,
         OutputDrawable: Drawable<KurboOpSet<F>>,
     > KurboDrawableMaker<F, OutputDrawable>
 {
@@ -38,7 +39,7 @@ impl<F: Float + Trig + FromPrimitive + MulAssign + Display,
 }
 
 impl<
-        F: Float + Trig + FromPrimitive + MulAssign + Display,
+        F: RealNumber + MulAssign + Display,
         OutputDrawable: Drawable<KurboOpSet<F>>,
     > RoughlyDrawableMaker<F, KurboOpSet<F>, KurboDrawable<F>>
     for KurboDrawableMaker<F, OutputDrawable>
@@ -79,7 +80,7 @@ impl<
 
     fn linear_path(
         &self,
-        points: &[Point2D<F>],
+        points: &[Point2<F>],
         close: bool,
         options: &Option<DrawOptions>,
     ) -> KurboDrawable<F> {
@@ -87,7 +88,7 @@ impl<
         drawable.to_kurbo_drawable()
     }
 
-    fn polygon(&self, points: &[Point2D<F>], options: &Option<DrawOptions>) -> KurboDrawable<F> {
+    fn polygon(&self, points: &[Point2<F>], options: &Option<DrawOptions>) -> KurboDrawable<F> {
         let drawable = self.gen.polygon(points, options);
         drawable.to_kurbo_drawable()
     }
@@ -111,9 +112,9 @@ impl<
 
     fn bezier_quadratic(
         &self,
-        start: Point2D<F>,
-        cp: Point2D<F>,
-        end: Point2D<F>,
+        start: Point2<F>,
+        cp: Point2<F>,
+        end: Point2<F>,
         options: &Option<DrawOptions>,
     ) -> KurboDrawable<F> {
         let drawable = self.gen.bezier_quadratic(start, cp, end, options);
@@ -122,17 +123,17 @@ impl<
 
     fn bezier_cubic(
         &self,
-        start: Point2D<F>,
-        cp1: Point2D<F>,
-        cp2: Point2D<F>,
-        end: Point2D<F>,
+        start: Point2<F>,
+        cp1: Point2<F>,
+        cp2: Point2<F>,
+        end: Point2<F>,
         options: &Option<DrawOptions>,
     ) -> KurboDrawable<F> {
         let drawable = self.gen.bezier_cubic(start, cp1, cp2, end, options);
         drawable.to_kurbo_drawable()
     }
 
-    fn curve(&self, points: &[Point2D<F>], options: &Option<DrawOptions>) -> KurboDrawable<F> {
+    fn curve(&self, points: &[Point2<F>], options: &Option<DrawOptions>) -> KurboDrawable<F> {
         let drawable = self.gen.curve(points, options);
         drawable.to_kurbo_drawable()
     }

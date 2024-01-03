@@ -1,8 +1,8 @@
 use std::borrow::BorrowMut;
 use std::marker::PhantomData;
 
-use euclid::default::Point2D;
-use euclid::Trig;
+use nalgebra::{Point2, Scalar};
+use nalgebra_glm::RealNumber;
 use num_traits::{Float, FromPrimitive};
 
 use super::scan_line_hachure::ScanlineHachureFiller;
@@ -18,8 +18,8 @@ pub struct HatchFiller<F> {
 
 impl<F, P> PatternFiller<F, P> for HatchFiller<F>
 where
-    F: Float + Trig + FromPrimitive,
-    P: BorrowMut<Vec<Vec<Point2D<F>>>>,
+    F: RealNumber,
+    P: BorrowMut<Vec<Vec<Point2<F>>>>,
 {
     fn fill_polygons(&self, mut polygon_list: P, o: &mut DrawOptions) -> OpSet<F> {
         let mut set1 = self
@@ -32,7 +32,7 @@ where
     }
 }
 
-impl<F: Float + Trig + FromPrimitive> HatchFiller<F> {
+impl<F: RealNumber> HatchFiller<F> {
     pub fn new() -> Self {
         HatchFiller {
             _phantom: PhantomData,
@@ -41,7 +41,7 @@ impl<F: Float + Trig + FromPrimitive> HatchFiller<F> {
     }
 }
 
-impl<F: Float + Trig + FromPrimitive> Default for HatchFiller<F> {
+impl<F: RealNumber> Default for HatchFiller<F> {
     fn default() -> Self {
         Self::new()
     }

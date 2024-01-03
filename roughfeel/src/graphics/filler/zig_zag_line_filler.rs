@@ -1,14 +1,14 @@
 use std::borrow::BorrowMut;
 use std::marker::PhantomData;
 
-use euclid::default::Point2D;
-use euclid::{point2, Trig};
+use nalgebra::{Point2};
+use nalgebra_glm::RealNumber;
 use num_traits::{Float, FloatConst, FromPrimitive};
 
 use super::scan_line_hachure::polygon_hachure_lines;
 use super::traits::PatternFiller;
 
-use crate::graphics::_c;
+use crate::graphics::{_c, _to_u64, _to_f32};
 use crate::graphics::drawable::DrawOptions;
 use crate::graphics::drawable_ops::{Op, OpSet, OpSetType};
 use crate::graphics::geometry::{rotate_lines, rotate_points, Line};
@@ -21,8 +21,8 @@ pub struct ZigZagLineFiller<F> {
 
 impl<F, P> PatternFiller<F, P> for ZigZagLineFiller<F>
 where
-    F: Float + Trig + FromPrimitive,
-    P: BorrowMut<Vec<Vec<Point2D<F>>>>,
+    F: RealNumber,
+    P: BorrowMut<Vec<Vec<Point2<F>>>>,
 {
     fn fill_polygons(&self, mut polygon_list: P, o: &mut DrawOptions) -> OpSet<F> {
         let mut gap = o.hachure_gap.map(_c::<F>).unwrap_or_else(|| _c::<F>(-1.0));
@@ -38,7 +38,7 @@ where
         if zig_zag_offset < F::zero() {
             zig_zag_offset = gap;
         }
-        o.set_hachure_gap(Some((gap + zig_zag_offset).to_f32().unwrap()));
+        o.set_hachure_gap(Some(_to_f32(gap + zig_zag_offset)));
         let lines = polygon_hachure_lines(polygon_list.borrow_mut(), o);
         OpSet {
             op_set_type: OpSetType::FillSketch,
@@ -49,7 +49,7 @@ where
     }
 }
 
-impl<F: Float + Trig + FromPrimitive> ZigZagLineFiller<F> {
+impl<F: RealNumber> ZigZagLineFiller<F> {
     pub fn new() -> Self {
         ZigZagLineFiller {
             _phantom: PhantomData,
@@ -70,21 +70,21 @@ impl<F: Float + Trig + FromPrimitive> ZigZagLineFiller<F> {
 
             let alpha = ((p2.y - p1.y) / (p2.x - p1.x)).atan();
 
-            for i in 0..(count.to_isize().unwrap()) {
+            for i in 0..(_to_u64(count)) {
                 let lstart = _c::<F>(i as f32) * _c::<F>(2.0) * zig_zag_offset;
                 let lend = _c::<F>((i + 1) as f32) * _c::<F>(2.0) * zig_zag_offset;
                 let dz = (zig_zag_offset.powi(2) * _c::<F>(2.0)).sqrt();
-                let start: Point2D<F> = point2(
-                    p1.x + lstart * num_traits::Float::cos(alpha),
-                    p1.y + lstart * num_traits::Float::sin(alpha),
+                let start: Point2<F> = Point2::new(
+                    p1.x + lstart * alpha.cos(),
+                    p1.y + lstart * alpha.sin(),
                 );
-                let end: Point2D<F> = point2(
-                    p1.x + lend * num_traits::Float::cos(alpha),
-                    p1.y + lend * num_traits::Float::sin(alpha),
+                let end: Point2<F> = Point2::new(
+                    p1.x + lend * alpha.cos(),
+                    p1.y + lend * alpha.sin(),
                 );
-                let middle: Point2D<F> = point2(
-                    start.x + dz * num_traits::Float::cos(alpha + _c::<F>(f32::PI() / 4.0)),
-                    start.y + dz * num_traits::Float::sin(alpha + _c::<F>(f32::PI() / 4.0)),
+                let middle: Point2<F> = Point2::new(
+                    start.x + dz * (alpha + _c::<F>(f32::PI() / 4.0)).cos(),
+                    start.y + dz * (alpha + _c::<F>(f32::PI() / 4.0)).sin(),
                 );
                 ops.extend(_double_line(start.x, start.y, middle.x, middle.y, o, false));
 

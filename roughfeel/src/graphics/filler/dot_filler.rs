@@ -1,8 +1,8 @@
 use std::borrow::BorrowMut;
 use std::marker::PhantomData;
 
-use euclid::default::Point2D;
-use euclid::Trig;
+use nalgebra::{Point2, Scalar};
+use nalgebra_glm::RealNumber;
 use num_traits::{Float, FromPrimitive};
 
 use super::scan_line_hachure::polygon_hachure_lines;
@@ -20,8 +20,8 @@ pub struct DotFiller<F> {
 
 impl<F, P> PatternFiller<F, P> for DotFiller<F>
 where
-    F: Float + Trig + FromPrimitive,
-    P: BorrowMut<Vec<Vec<Point2D<F>>>>,
+    F: RealNumber,
+    P: BorrowMut<Vec<Vec<Point2<F>>>>,
 {
     fn fill_polygons(&self, mut polygon_list: P, o: &mut DrawOptions) -> OpSet<F> {
         o.set_hachure_angle(Some(0.0));
@@ -35,7 +35,7 @@ where
         }
     }
 }
-impl<F: Float + Trig + FromPrimitive> DotFiller<F> {
+impl<F: RealNumber> DotFiller<F> {
     pub fn new() -> Self {
         DotFiller {
             _phantom: PhantomData,
@@ -65,8 +65,10 @@ impl<F: Float + Trig + FromPrimitive> DotFiller<F> {
             let offset = length - (count * gap);
             let x = ((line.start_point.x + line.end_point.x) / _c::<F>(2.0)) - (gap / _c::<F>(4.0));
             let min_y = F::min(line.start_point.y, line.end_point.y);
-            for i in 0..count.to_u64().unwrap() {
-                let y = min_y + offset + (F::from(i).unwrap() * gap);
+
+            let count: f64 = nalgebra::try_convert(count).unwrap();
+            for i in 0..(count as u64) {
+                let y = min_y + offset + (F::from_u64(i).unwrap() * gap);
                 let cx = (x - ro) + _cc::<F>(o.random()) * _c::<F>(2.0) * ro;
                 let cy = (y - ro) + _cc::<F>(o.random()) * _c::<F>(2.0) * ro;
                 let ellipse_ops = ellipse(cx, cy, fweight, fweight, o);
@@ -78,7 +80,7 @@ impl<F: Float + Trig + FromPrimitive> DotFiller<F> {
     }
 }
 
-impl<F: Float + Trig + FromPrimitive> Default for DotFiller<F> {
+impl<F: RealNumber> Default for DotFiller<F> {
     fn default() -> Self {
         Self::new()
     }
