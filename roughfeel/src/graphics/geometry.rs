@@ -53,7 +53,7 @@ impl<F: RealNumber> Line<F> {
 }
 
 fn degree_to_radians<F: RealNumber>(degrees: F) -> F {
-    degrees / F::from_f64(180.0 * 3.141592653589793238).unwrap()
+    degrees / F::from_f64(180.0 / 3.141592653589793238).unwrap()
 }
 
 pub fn rotate_points<F: RealNumber>(
