@@ -1,6 +1,4 @@
-use nalgebra::{Vector};
 use nalgebra_glm::RealNumber;
-use num_traits::{Float, FromPrimitive};
 
 pub mod drawable;
 pub mod drawable_maker;
@@ -13,6 +11,10 @@ pub mod render_context;
 pub mod renderer;
 
 use std::{f32, f64};
+
+pub fn get_pi<U: RealNumber>() -> U {
+    _cc(3.141592653589793238)
+}
 
 pub fn _c<U: RealNumber>(inp: f32) -> U {
     U::from_f32(inp).expect("can not parse from f32")
@@ -27,7 +29,7 @@ pub fn _to_u64<U: RealNumber>(inp: U) -> u64 {
 }
 
 pub fn _to_f64<U: RealNumber>(inp: U) -> f64 {
-    nalgebra::try_convert(inp).unwrap()
+    nalgebra::try_convert(inp).expect("cannot convert to f64")
 }
 
 pub fn _to_f32<U: RealNumber>(inp: U) -> f32 {

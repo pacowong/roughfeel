@@ -1,11 +1,8 @@
 // Copy from https://github.com/orhanbalci/rough-rs/blob/main/roughr/src/renderer.rs
 use std::borrow::BorrowMut;
 
-use nalgebra::{Point2, Scalar};
-use nalgebra_glm::RealNumber;
-// use euclid::default::Point2;
-// use euclid::{point2, Trig};
-use num_traits::{Float, FloatConst, FromPrimitive};
+use nalgebra::{Point2};
+use nalgebra_glm::{RealNumber, sqrt};
 use svg_path_ops::{absolutize, normalize};
 use svgtypes::{PathParser, PathSegment};
 
@@ -17,6 +14,7 @@ use crate::graphics::filler::FillerType::{
     DashedFiller, DotFiller, HatchFiller, ScanLineHachure, ZigZagFiller, ZigZagLineFiller,
 };
 use crate::graphics::geometry::{convert_bezier_quadratic_to_cubic, BezierQuadratic};
+use crate::graphics::get_pi;
 use crate::graphics::paint::FillStyle;
 
 #[derive(PartialEq, Eq, Debug)]
@@ -26,7 +24,7 @@ pub struct EllipseParams<F: RealNumber> {
     pub increment: F,
 }
 
-pub struct EllipseResult<F: RealNumber + FromPrimitive> {
+pub struct EllipseResult<F: RealNumber> {
     pub opset: OpSet<F>,
     pub estimated_points: Vec<Point2<F>>,
 }
@@ -97,7 +95,7 @@ pub struct EllipseResult<F: RealNumber + FromPrimitive> {
 ///     },
 /// );
 /// ```
-pub fn line<F: RealNumber + FromPrimitive>(
+pub fn line<F: RealNumber>(
     x1: F,
     y1: F,
     x2: F,
@@ -246,14 +244,14 @@ pub fn linear_path<F: RealNumber>(
     }
 }
 
-pub fn polygon<F: RealNumber + FromPrimitive>(
+pub fn polygon<F: RealNumber>(
     points: &[Point2<F>],
     o: &mut DrawOptions,
 ) -> OpSet<F> {
     linear_path(points, true, o)
 }
 
-pub fn rectangle<F: RealNumber + FromPrimitive>(
+pub fn rectangle<F: RealNumber>(
     x: F,
     y: F,
     width: F,
@@ -269,7 +267,7 @@ pub fn rectangle<F: RealNumber + FromPrimitive>(
     polygon(&points, o)
 }
 
-pub fn bezier_quadratic<F: RealNumber + FromPrimitive>(
+pub fn bezier_quadratic<F: RealNumber>(
     start: Point2<F>,
     cp: Point2<F>,
     end: Point2<F>,
@@ -285,7 +283,7 @@ pub fn bezier_quadratic<F: RealNumber + FromPrimitive>(
     }
 }
 
-pub fn bezier_cubic<F: RealNumber + FromPrimitive>(
+pub fn bezier_cubic<F: RealNumber>(
     start: Point2<F>,
     cp1: Point2<F>,
     cp2: Point2<F>,
@@ -302,10 +300,7 @@ pub fn bezier_cubic<F: RealNumber + FromPrimitive>(
     }
 }
 
-pub fn curve<F: RealNumber + FromPrimitive>(
-    points: &[Point2<F>],
-    o: &mut DrawOptions,
-) -> OpSet<F> {
+pub fn curve<F: RealNumber>(points: &[Point2<F>], o: &mut DrawOptions) -> OpSet<F> {
     let mut o1 = _curve_with_offset(
         points,
         _c::<F>(1.0) * _c(1.0 + o.roughness.unwrap_or(0.0) * 0.2),
@@ -327,7 +322,7 @@ pub fn curve<F: RealNumber + FromPrimitive>(
     }
 }
 
-pub fn ellipse<F: RealNumber + FromPrimitive>(
+pub fn ellipse<F: RealNumber>(
     x: F,
     y: F,
     width: F,
@@ -343,18 +338,14 @@ pub fn generate_ellipse_params<F: RealNumber>(
     height: F,
     o: &mut DrawOptions,
 ) -> EllipseParams<F> {
-    let psq: F = (
-        _c::<F>(3.14159)
-            * _c(2.0)
-            * (
-                ((width / _c(2.0)).powi(2) + (height / _c(2.0)).powi(2)) / _c(2.0)
-            ).sqrt()
-    ).sqrt();
-    let step_count: F = (
-        _c::<F>(o.curve_step_count.unwrap_or(1.0)).max(
-        _c::<F>(o.curve_step_count.unwrap_or(1.0) / 200.0.sqrt()) * psq,
-    )).ceil();
-    let increment: F = (_c::<F>(f32::PI()) * _c(2.0)) / step_count;
+    let psq: F = (_c::<F>(3.14159)
+        * _c(2.0)
+        * (((width / _c(2.0)).powi(2) + (height / _c(2.0)).powi(2)) / _c(2.0)).sqrt())
+    .sqrt();
+    let step_count: F = (_c::<F>(o.curve_step_count.unwrap_or(1.0))
+        .max(_c::<F>(o.curve_step_count.unwrap_or(1.0) / f32::sqrt(200.0)) * psq))
+    .ceil();
+    let increment: F = (_c::<F>(get_pi()) * _c(2.0)) / step_count;
     let mut rx = (width / _c(2.0)).abs();
     let mut ry = (height / _c(2.0)).abs();
     let curve_fit_randomness: F = _c::<F>(1.0) - _c(o.curve_fitting.unwrap_or(0.0));
@@ -363,7 +354,7 @@ pub fn generate_ellipse_params<F: RealNumber>(
     EllipseParams { increment, rx, ry }
 }
 
-pub fn ellipse_with_params<F: RealNumber + FromPrimitive>(
+pub fn ellipse_with_params<F: RealNumber>(
     x: F,
     y: F,
     o: &mut DrawOptions,
@@ -415,7 +406,7 @@ pub fn ellipse_with_params<F: RealNumber + FromPrimitive>(
     }
 }
 
-pub fn arc<F: RealNumber + FromPrimitive>(
+pub fn arc<F: RealNumber>(
     x: F,
     y: F,
     width: F,
@@ -435,14 +426,14 @@ pub fn arc<F: RealNumber + FromPrimitive>(
     let mut strt: F = start;
     let mut stp: F = stop;
     while strt < _c(0.0) {
-        strt = strt + _c(f32::PI() * 2.0);
-        stp = stp + _c(f32::PI() * 2.0);
+        strt = strt + _c(get_pi::<f32>() * 2.0);
+        stp = stp + _c(get_pi::<f32>() * 2.0);
     }
-    if (stp - strt) > _c(f32::PI() * 2.0) {
+    if (stp - strt) > _c(get_pi::<f32>() * 2.0) {
         strt = _c(0.0);
-        stp = _c(f32::PI() * 2.0);
+        stp = _c(get_pi::<f32>() * 2.0);
     }
-    let ellipse_inc: F = _c::<F>(f32::PI() * 2.0) / _c(o.curve_step_count.unwrap_or(1.0));
+    let ellipse_inc: F = _c::<F>(get_pi::<f32>() * 2.0) / _c(o.curve_step_count.unwrap_or(1.0));
     let arc_inc = (ellipse_inc / _c(2.0)).min((stp - strt) / _c(2.0));
     let mut ops = _arc(arc_inc, cx, cy, rx, ry, strt, stp, _c(1.0), o);
     if !o.disable_multi_stroke.unwrap_or(false) {
@@ -527,15 +518,11 @@ pub fn rand_offset<F: RealNumber>(x: F, o: &mut DrawOptions) -> F {
     _offset_opt(x, o, None)
 }
 
-pub fn rand_offset_with_range<F: RealNumber>(
-    min: F,
-    max: F,
-    o: &mut DrawOptions,
-) -> F {
+pub fn rand_offset_with_range<F: RealNumber>(min: F, max: F, o: &mut DrawOptions) -> F {
     _offset(min, max, o, None)
 }
 
-pub fn double_line_fill_ops<F: RealNumber + FromPrimitive>(
+pub fn double_line_fill_ops<F: RealNumber>(
     x1: F,
     y1: F,
     x2: F,
@@ -553,23 +540,14 @@ fn clone_options_alter_seed(ops: &mut DrawOptions) -> DrawOptions {
     result
 }
 
-fn _offset<F: RealNumber>(
-    min: F,
-    max: F,
-    ops: &mut DrawOptions,
-    roughness_gain: Option<F>,
-) -> F {
+fn _offset<F: RealNumber>(min: F, max: F, ops: &mut DrawOptions, roughness_gain: Option<F>) -> F {
     let rg: F = roughness_gain.unwrap_or_else(|| _c(1.0));
     _c::<F>(ops.roughness.unwrap_or(1.0))
         * rg
         * ((_c::<F>(ops.random() as f32) * (max - min)) + min)
 }
 
-fn _offset_opt<F: RealNumber>(
-    x: F,
-    ops: &mut DrawOptions,
-    roughness_gain: Option<F>,
-) -> F {
+fn _offset_opt<F: RealNumber>(x: F, ops: &mut DrawOptions, roughness_gain: Option<F>) -> F {
     _offset(-x, x, ops, roughness_gain)
 }
 
@@ -585,16 +563,12 @@ fn _line_add_ops<F: RealNumber>(
     offset: F,
     roughness_gain: F,
     mid_disp_x: F,
-    mid_disp_y: F
+    mid_disp_y: F,
 ) -> Vec<Op<F>> {
     let mut ops: Vec<Op<F>> = Vec::new();
     let preserve_vertices = o.preserve_vertices.unwrap_or(false);
     let half_offset = offset / _c(2.0);
-    let offset_for_overlay = if overlay {
-        half_offset
-    } else {
-        offset
-    };
+    let offset_for_overlay = if overlay { half_offset } else { offset };
     if mover {
         ops.push(Op {
             op: OpType::Move,
@@ -646,7 +620,7 @@ fn _line_add_ops<F: RealNumber>(
     ops
 }
 
-fn _line<F: RealNumber + FromPrimitive>(
+fn _line<F: RealNumber>(
     x1: F,
     y1: F,
     x2: F,
@@ -693,11 +667,11 @@ fn _line<F: RealNumber + FromPrimitive>(
         offset,
         roughness_gain,
         mid_disp_x,
-        mid_disp_y
+        mid_disp_y,
     )
 }
 
-pub(crate) fn _double_line<F: RealNumber + FromPrimitive>(
+pub(crate) fn _double_line<F: RealNumber>(
     x1: F,
     y1: F,
     x2: F,
@@ -720,7 +694,7 @@ pub(crate) fn _double_line<F: RealNumber + FromPrimitive>(
     }
 }
 
-pub(crate) fn _curve<F: RealNumber + FromPrimitive>(
+pub(crate) fn _curve<F: RealNumber>(
     points: &[Point2<F>],
     close_point: Option<Point2<F>>,
     o: &mut DrawOptions,
@@ -792,7 +766,7 @@ pub(crate) fn _curve<F: RealNumber + FromPrimitive>(
     ops
 }
 
-fn _curve_with_offset<F: RealNumber + FromPrimitive>(
+fn _curve_with_offset<F: RealNumber>(
     points: &[Point2<F>],
     offset: F,
     o: &mut DrawOptions,
@@ -847,7 +821,7 @@ pub(crate) fn _compute_ellipse_points<F: RealNumber>(
         ));
 
         let mut angle = _c::<F>(0.0);
-        while angle <= _c(f32::PI() * 2.0) {
+        while angle <= _c(get_pi::<f32>() * 2.0) {
             let p = Point2::new(cx + rx * angle.cos(), cy + ry * angle.sin());
             core_points.push(p);
             all_points.push(p);
@@ -863,16 +837,12 @@ pub(crate) fn _compute_ellipse_points<F: RealNumber>(
         ));
     } else {
         // Rough edge
-        let rad_offset: F = _offset_opt::<F>(_c(0.5), o, None) - (_c::<F>(f32::PI()) / _c(2.0));
+        let rad_offset: F = _offset_opt::<F>(_c(0.5), o, None) - (_c::<F>(get_pi()) / _c(2.0));
         all_points.push(Point2::new(
-            _offset_opt(offset, o, None)
-                + cx
-                + _c::<F>(0.9) * rx * (rad_offset - increment).cos(),
-            _offset_opt(offset, o, None)
-                + cy
-                + _c::<F>(0.9) * ry * (rad_offset - increment).sin(),
+            _offset_opt(offset, o, None) + cx + _c::<F>(0.9) * rx * (rad_offset - increment).cos(),
+            _offset_opt(offset, o, None) + cy + _c::<F>(0.9) * ry * (rad_offset - increment).sin(),
         ));
-        let end_angle = _c::<F>(f32::PI()) * _c(2.0) + rad_offset - _c(0.01);
+        let end_angle = _c::<F>(get_pi()) * _c(2.0) + rad_offset - _c(0.01);
         let mut angle = rad_offset;
         while angle < end_angle {
             let p = Point2::new(
@@ -887,18 +857,14 @@ pub(crate) fn _compute_ellipse_points<F: RealNumber>(
         all_points.push(Point2::new(
             _offset_opt(offset, o, None)
                 + cx
-                + rx * (rad_offset + _c::<F>(f32::PI()) * _c(2.0) + overlap * _c(0.5)).cos(),
+                + rx * (rad_offset + _c::<F>(get_pi()) * _c(2.0) + overlap * _c(0.5)).cos(),
             _offset_opt(offset, o, None)
                 + cy
-                + ry * (rad_offset + _c::<F>(f32::PI()) * _c(2.0) + overlap * _c(0.5)).sin(),
+                + ry * (rad_offset + _c::<F>(get_pi()) * _c(2.0) + overlap * _c(0.5)).sin(),
         ));
         all_points.push(Point2::new(
-            _offset_opt(offset, o, None)
-                + cx
-                + _c::<F>(0.98) * rx * (rad_offset + overlap).cos(),
-            _offset_opt(offset, o, None)
-                + cy
-                + _c::<F>(0.98) * ry * (rad_offset + overlap).sin(),
+            _offset_opt(offset, o, None) + cx + _c::<F>(0.98) * rx * (rad_offset + overlap).cos(),
+            _offset_opt(offset, o, None) + cy + _c::<F>(0.98) * ry * (rad_offset + overlap).sin(),
         ));
         all_points.push(Point2::new(
             _offset_opt(offset, o, None)
@@ -912,7 +878,7 @@ pub(crate) fn _compute_ellipse_points<F: RealNumber>(
     vec![all_points, core_points]
 }
 
-fn _arc<F: RealNumber + FromPrimitive>(
+fn _arc<F: RealNumber>(
     increment: F,
     cx: F,
     cy: F,
@@ -936,18 +902,12 @@ fn _arc<F: RealNumber + FromPrimitive>(
         ));
         angle = angle + increment;
     }
-    points.push(Point2::new(
-        cx + rx * stp.cos(),
-        cy + ry * stp.sin(),
-    ));
-    points.push(Point2::new(
-        cx + rx * stp.cos(),
-        cy + ry * stp.sin(),
-    ));
+    points.push(Point2::new(cx + rx * stp.cos(), cy + ry * stp.sin()));
+    points.push(Point2::new(cx + rx * stp.cos(), cy + ry * stp.sin()));
     _curve(&points, None, o)
 }
 
-fn _bezier_quadratic_to<F: RealNumber + FromPrimitive>(
+fn _bezier_quadratic_to<F: RealNumber>(
     x1: F,
     y1: F,
     x: F,
@@ -975,7 +935,7 @@ fn _bezier_quadratic_to<F: RealNumber + FromPrimitive>(
     )
 }
 
-fn _bezier_to<F: RealNumber + FromPrimitive>(
+fn _bezier_to<F: RealNumber>(
     x1: F,
     y1: F,
     x2: F,
@@ -1078,7 +1038,7 @@ pub fn pattern_fill_arc<F>(
     o: &mut DrawOptions,
 ) -> OpSet<F>
 where
-    F: RealNumber + FromPrimitive,
+    F: RealNumber,
 {
     let cx = x;
     let cy = y;
@@ -1090,7 +1050,7 @@ where
 
     let mut strt = start;
     let mut stp = stop;
-    let two_pi = _c::<F>(f32::PI()) * _c::<F>(2.0);
+    let two_pi = _c::<F>(get_pi()) * _c::<F>(2.0);
 
     while strt < _c(0.0) {
         strt = strt + two_pi;
@@ -1108,10 +1068,7 @@ where
     let mut angle = strt;
 
     while angle <= stp {
-        points.push(Point2::new(
-            cx + rx * angle.cos(),
-            cy + ry * angle.sin(),
-        ));
+        points.push(Point2::new(cx + rx * angle.cos(), cy + ry * angle.sin()));
         angle = angle + increment;
     }
 
@@ -1122,7 +1079,7 @@ where
 
 pub fn svg_path<F>(path: String, o: &mut DrawOptions) -> OpSet<F>
 where
-    F: RealNumber + FromPrimitive,
+    F: RealNumber,
 {
     let mut ops = vec![];
     let mut first = Point2::new(_c::<F>(0.0), _c::<F>(0.0));
@@ -1228,7 +1185,11 @@ mod test {
     #[test]
     fn linear_path() {
         let result = super::linear_path(
-            &[Point2::new(0.0f32, 0.0), Point2::new(0.0, 0.1), Point2::new(1.0, 1.0)],
+            &[
+                Point2::new(0.0f32, 0.0),
+                Point2::new(0.0, 0.1),
+                Point2::new(1.0, 1.0),
+            ],
             false,
             &mut get_default_options(),
         );
@@ -1260,7 +1221,12 @@ mod test {
                     Op {
                         op: OpType::BCurveTo,
                         data: vec![
-                            0.0031614425, 0.020319115, 0.002903849, 0.043179963, -0.00028266618, 0.10188009
+                            0.0031614425,
+                            0.020319115,
+                            0.002903849,
+                            0.043179963,
+                            -0.00028266618,
+                            0.10188009
                         ]
                     },
                     Op {
@@ -1269,9 +1235,7 @@ mod test {
                     },
                     Op {
                         op: OpType::BCurveTo,
-                        data: vec![
-                            0.1373705, 0.24164818, 0.464674, 0.6724219, 1.0288227, 0.936725
-                        ]
+                        data: vec![0.1373705, 0.24164818, 0.464674, 0.6724219, 1.0288227, 0.936725]
                     },
                     Op {
                         op: OpType::Move,

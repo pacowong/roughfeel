@@ -1,5 +1,5 @@
 // Reference from https://github.com/orhanbalci/rough-rs/blob/main/roughr/src/geometry.rs
-use nalgebra::{Point2, Vector2, Rotation2};
+use nalgebra::{Point2, Rotation2, Vector2};
 use nalgebra_glm::RealNumber;
 
 #[derive(Clone, Debug, PartialEq)]
@@ -38,7 +38,8 @@ impl<F: RealNumber> Line<F> {
 
     /// Rotate a line by `degrees` around a `center`. The center may not be the midpoint of the line.
     pub fn rotate(&mut self, center: &Point2<F>, degrees: F) -> &mut Self {
-        let rotated_end_points = rotate_points(&[self.start_point, self.end_point], center, degrees);
+        let rotated_end_points =
+            rotate_points(&[self.start_point, self.end_point], center, degrees);
         self.start_point = rotated_end_points[0];
         self.end_point = rotated_end_points[1];
         self
@@ -86,9 +87,11 @@ pub fn convert_bezier_quadratic_to_cubic<F: RealNumber>(
     // This can be verified by substituting the following points in the cubic Bézier curves.
     // You will obtain the quadratic cubic Bézier curves.
     // https://fontforge.org/docs/techref/bezier.html#converting-truetype-to-postscript
-    let scaling_factor = F::from_f64(2.0/3.0).unwrap();
-    let cubic_pt1 = bezier_quadratic.start + (bezier_quadratic.cp - bezier_quadratic.start) * scaling_factor;
-    let cubic_pt2 = bezier_quadratic.end + (bezier_quadratic.cp - bezier_quadratic.end) * scaling_factor;
+    let scaling_factor = F::from_f64(2.0 / 3.0).unwrap();
+    let cubic_pt1 =
+        bezier_quadratic.start + (bezier_quadratic.cp - bezier_quadratic.start) * scaling_factor;
+    let cubic_pt2 =
+        bezier_quadratic.end + (bezier_quadratic.cp - bezier_quadratic.end) * scaling_factor;
     BezierCubic {
         start: bezier_quadratic.start,
         cp1: cubic_pt1,
@@ -102,7 +105,7 @@ mod tests {
     use approx::relative_eq;
     use nalgebra::Point2;
 
-    use super::{BezierCubic, BezierQuadratic, convert_bezier_quadratic_to_cubic};
+    use super::{convert_bezier_quadratic_to_cubic, BezierCubic, BezierQuadratic};
 
     #[test]
     fn line_length() {
@@ -114,16 +117,41 @@ mod tests {
     fn line_rotate() {
         let mut l = super::Line::from(&[Point2::new(1.0, 1.0), Point2::new(2.0, 2.0)]);
         l.rotate(&Point2::new(0.0, 0.0), 45.0);
-        assert!(relative_eq!(l.start_point, Point2::new(0.0, f64::sqrt(2.0)), epsilon = 1.0e-7));
-        assert!(relative_eq!(l.end_point, Point2::new(0.0, 2.0*f64::sqrt(2.0)), epsilon = 1.0e-7));
+        assert!(relative_eq!(
+            l.start_point,
+            Point2::new(0.0, f64::sqrt(2.0)),
+            epsilon = 1.0e-7
+        ));
+        assert!(relative_eq!(
+            l.end_point,
+            Point2::new(0.0, 2.0 * f64::sqrt(2.0)),
+            epsilon = 1.0e-7
+        ));
 
-        l.rotate(&Point2::new(0.0, 0.0), -35.0).rotate(&Point2::new(0.0, 0.0), -10.0);
-        assert!(relative_eq!(l.start_point, Point2::new(1.0, 1.0), epsilon = 1.0e-7));
-        assert!(relative_eq!(l.end_point, Point2::new(2.0, 2.0), epsilon = 1.0e-7));
+        l.rotate(&Point2::new(0.0, 0.0), -35.0)
+            .rotate(&Point2::new(0.0, 0.0), -10.0);
+        assert!(relative_eq!(
+            l.start_point,
+            Point2::new(1.0, 1.0),
+            epsilon = 1.0e-7
+        ));
+        assert!(relative_eq!(
+            l.end_point,
+            Point2::new(2.0, 2.0),
+            epsilon = 1.0e-7
+        ));
 
         l.rotate(&Point2::new(1.0, 10.0), 45.0);
-        assert!(relative_eq!(l.start_point, Point2::new(7.363961030678928, 3.636038969321072), epsilon = 1.0e-7));
-        assert!(relative_eq!(l.end_point, Point2::new(7.363961030678928, 5.050252531694167), epsilon = 1.0e-7));
+        assert!(relative_eq!(
+            l.start_point,
+            Point2::new(7.363961030678928, 3.636038969321072),
+            epsilon = 1.0e-7
+        ));
+        assert!(relative_eq!(
+            l.end_point,
+            Point2::new(7.363961030678928, 5.050252531694167),
+            epsilon = 1.0e-7
+        ));
     }
 
     #[test]
@@ -134,11 +162,14 @@ mod tests {
             end: Point2::new(9.0, 12.0),
         };
         let result = convert_bezier_quadratic_to_cubic(bquad);
-        assert_eq!(result, BezierCubic::<f64> {
-            start: Point2::new(-3.0, 6.0),
-            cp1: Point2::new(-3.0+4.0, 6.0-2.0),
-            cp2: Point2::new(9.0-4.0, 12.0-6.0),
-            end: Point2::new(9.0, 12.0) });
+        assert_eq!(
+            result,
+            BezierCubic::<f64> {
+                start: Point2::new(-3.0, 6.0),
+                cp1: Point2::new(-3.0 + 4.0, 6.0 - 2.0),
+                cp2: Point2::new(9.0 - 4.0, 12.0 - 6.0),
+                end: Point2::new(9.0, 12.0)
+            }
+        );
     }
-
 }

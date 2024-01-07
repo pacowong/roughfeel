@@ -1,8 +1,8 @@
 use derive_builder::Builder;
-use rand::{random, Rng, SeedableRng};
-use rand_chacha::ChaCha8Rng;
 use nalgebra_glm::RealNumber;
 use palette::Srgba;
+use rand::{random, Rng, SeedableRng};
+use rand_chacha::ChaCha8Rng;
 
 use super::{
     drawable_ops::OpSet,
@@ -129,7 +129,7 @@ impl DrawOptions {
                     Some(r1) => r1.gen(),
                     None => 0.0,
                 }
-            },
+            }
         }
     }
 
@@ -150,19 +150,15 @@ pub trait OpSetTrait {
 
 pub trait Drawable<OpSetT: OpSetTrait>
 where
-    OpSetT::F: RealNumber
+    OpSetT::F: RealNumber,
 {
     // A drawable is a general concept for a graphic that can be drawn to the screen.
-    fn draw(
-        shape: String,
-        options: DrawOptions,
-        sets: Vec<OpSetT>,
-    ) -> Self;
+    fn draw(shape: String, options: DrawOptions, sets: Vec<OpSetT>) -> Self;
 }
 
-pub struct RoughlyDrawable<OpSetT: OpSetTrait> 
+pub struct RoughlyDrawable<OpSetT: OpSetTrait>
 where
-    OpSetT::F: RealNumber, 
+    OpSetT::F: RealNumber,
 {
     pub shape: String,
     pub options: DrawOptions,
@@ -170,7 +166,11 @@ where
 }
 
 impl<AF: RealNumber> Drawable<OpSet<AF>> for RoughlyDrawable<OpSet<AF>> {
-    fn draw(shape: String, options: DrawOptions, sets: Vec<OpSet<AF>>) -> RoughlyDrawable<OpSet<AF>> {
+    fn draw(
+        shape: String,
+        options: DrawOptions,
+        sets: Vec<OpSet<AF>>,
+    ) -> RoughlyDrawable<OpSet<AF>> {
         Self {
             shape: shape.into(),
             options: options.clone(),

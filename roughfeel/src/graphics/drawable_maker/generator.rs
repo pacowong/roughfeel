@@ -6,7 +6,10 @@ use nalgebra_glm::RealNumber;
 use points_on_curve::{curve_to_bezier, points_on_bezier_curves};
 
 use crate::graphics::_c;
-use crate::graphics::drawable::{DrawOptions, DrawOptionsBuilder, Drawable, PathInfo, OpSetTrait, RoughlyDrawable};
+use crate::graphics::drawable::{
+    DrawOptions, DrawOptionsBuilder, Drawable, OpSetTrait, PathInfo, RoughlyDrawable,
+};
+use crate::graphics::drawable_maker::RoughlyDrawableMakable;
 use crate::graphics::drawable_ops::{OpSet, OpSetType, OpType};
 use crate::graphics::geometry::{convert_bezier_quadratic_to_cubic, BezierQuadratic};
 use crate::graphics::paint::FillStyle;
@@ -15,7 +18,6 @@ use crate::graphics::renderer::{
     bezier_cubic, bezier_quadratic, curve, ellipse_with_params, generate_ellipse_params, line,
     linear_path, pattern_fill_arc, pattern_fill_polygons, rectangle, solid_fill_polygon, svg_path,
 };
-use crate::graphics::drawable_maker::RoughlyDrawableMakable;
 
 use super::Generator;
 
@@ -31,8 +33,7 @@ impl<F: RealNumber, OpSetT: OpSetTrait<F = F>> Default for Generator<OpSetT> {
     }
 }
 
-impl<F: RealNumber> Generator<OpSet<F>>
-{
+impl<F: RealNumber> Generator<OpSet<F>> {
     pub fn new(options: DrawOptions) -> Self {
         Generator {
             default_options: options,
@@ -59,6 +60,8 @@ impl<F: RealNumber> Generator<OpSet<F>>
     where
         F: RealNumber + Display,
     {
+        // Convert to path string
+        // https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Paths
         let mut path = String::new();
 
         for item in drawing.ops.iter_mut() {
@@ -138,10 +141,17 @@ impl<F: RealNumber> Generator<OpSet<F>>
     }
 }
 
-impl<F: RealNumber + Display>
-    RoughlyDrawableMakable<F, OpSet<F>, RoughlyDrawable<OpSet<F>>> for Generator<OpSet<F>>
+impl<F: RealNumber + Display> RoughlyDrawableMakable<F, OpSet<F>, RoughlyDrawable<OpSet<F>>>
+    for Generator<OpSet<F>>
 {
-    fn line(&self, x1: F, y1: F, x2: F, y2: F, options: &Option<DrawOptions>) -> RoughlyDrawable<OpSet<F>>
+    fn line(
+        &self,
+        x1: F,
+        y1: F,
+        x2: F,
+        y2: F,
+        options: &Option<DrawOptions>,
+    ) -> RoughlyDrawable<OpSet<F>>
     where
         F: RealNumber,
     {
@@ -232,7 +242,13 @@ impl<F: RealNumber + Display>
         self.d("ellipse".to_owned(), &paths, &Some(options))
     }
 
-    fn circle(&self, x: F, y: F, diameter: F, options: &Option<DrawOptions>) -> RoughlyDrawable<OpSet<F>>
+    fn circle(
+        &self,
+        x: F,
+        y: F,
+        diameter: F,
+        options: &Option<DrawOptions>,
+    ) -> RoughlyDrawable<OpSet<F>>
     where
         F: RealNumber,
     {
@@ -404,7 +420,11 @@ impl<F: RealNumber + Display>
         self.d("curve".to_owned(), &paths, &Some(options))
     }
 
-    fn curve(&self, points: &[Point2<F>], options: &Option<DrawOptions>) -> RoughlyDrawable<OpSet<F>>
+    fn curve(
+        &self,
+        points: &[Point2<F>],
+        options: &Option<DrawOptions>,
+    ) -> RoughlyDrawable<OpSet<F>>
     where
         F: RealNumber + Display,
     {
@@ -436,7 +456,11 @@ impl<F: RealNumber + Display>
         self.d("curve".to_owned(), &paths, &Some(options))
     }
 
-    fn polygon(&self, points: &[Point2<F>], options: &Option<DrawOptions>) -> RoughlyDrawable<OpSet<F>>
+    fn polygon(
+        &self,
+        points: &[Point2<F>],
+        options: &Option<DrawOptions>,
+    ) -> RoughlyDrawable<OpSet<F>>
     where
         F: RealNumber + Display,
     {

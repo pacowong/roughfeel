@@ -4,13 +4,12 @@ use std::marker::PhantomData;
 
 use nalgebra::{Point2, Scalar};
 use nalgebra_glm::RealNumber;
-use num_traits::{Float, FromPrimitive};
 
 use super::traits::PatternFiller;
-use crate::graphics::{_c, _to_u64, _to_f64};
 use crate::graphics::drawable::DrawOptions;
 use crate::graphics::drawable_ops::OpSet;
 use crate::graphics::geometry::{rotate_lines, rotate_points, Line};
+use crate::graphics::{_c, _to_f64, _to_u64};
 
 #[derive(Clone)]
 struct EdgeEntry<F: RealNumber> {
@@ -230,7 +229,7 @@ where
     }
 }
 
-impl<F: RealNumber + FromPrimitive> ScanlineHachureFiller<F> {
+impl<F: RealNumber> ScanlineHachureFiller<F> {
     pub fn new() -> Self {
         ScanlineHachureFiller {
             _phantom: PhantomData,

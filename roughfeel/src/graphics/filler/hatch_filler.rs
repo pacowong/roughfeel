@@ -3,7 +3,6 @@ use std::marker::PhantomData;
 
 use nalgebra::{Point2, Scalar};
 use nalgebra_glm::RealNumber;
-use num_traits::{Float, FromPrimitive};
 
 use super::scan_line_hachure::ScanlineHachureFiller;
 use super::traits::PatternFiller;

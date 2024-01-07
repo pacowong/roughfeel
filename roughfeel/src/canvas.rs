@@ -1,7 +1,6 @@
 use derive_builder::Builder;
 use nalgebra::{Point2, Scalar};
 use nalgebra_glm::RealNumber;
-use num_traits::{Float, FromPrimitive};
 use palette::Srgba;
 use rand_chacha::{rand_core::block::BlockRngCore, ChaCha8Core};
 

@@ -1,36 +1,27 @@
 pub mod generator;
 
+use crate::graphics::drawable::{DrawOptions, Drawable, OpSetTrait};
+use nalgebra::Point2;
+use nalgebra_glm::RealNumber;
+use std::fmt::Display;
 use std::marker::PhantomData;
-use crate::graphics::drawable::{DrawOptions, OpSetTrait, Drawable};
+
+// Data types
 pub struct Generator<OpSetT: OpSetTrait> {
     default_options: DrawOptions,
     phantom_data_opsett: PhantomData<OpSetT>,
 }
 
-use std::fmt::Display;
-
-use nalgebra::Point2;
-use nalgebra_glm::RealNumber;
-
-pub trait RoughlyDrawableMakable<
-    F: RealNumber + Display,
-    OpSetT,
-    OutputDrawable,
-> where
+// Traits
+pub trait RoughlyDrawableMakable<F: RealNumber + Display, OpSetT, OutputDrawable>
+where
     OpSetT: OpSetTrait<F = F>,
     OutputDrawable: Drawable<OpSetT>,
 {
     // This trait contains all primitive shapes
     // type OutputDrawable: Drawable<OpSetT: OpSetTrait, F=F>;
 
-    fn line(
-        &self,
-        x1: F,
-        y1: F,
-        x2: F,
-        y2: F,
-        options: &Option<DrawOptions>
-    ) -> OutputDrawable;
+    fn line(&self, x1: F, y1: F, x2: F, y2: F, options: &Option<DrawOptions>) -> OutputDrawable;
 
     fn rectangle(
         &self,
@@ -50,13 +41,7 @@ pub trait RoughlyDrawableMakable<
         options: &Option<DrawOptions>,
     ) -> OutputDrawable;
 
-    fn circle(
-        &self,
-        x: F,
-        y: F,
-        diameter: F,
-        options: &Option<DrawOptions>
-    ) -> OutputDrawable;
+    fn circle(&self, x: F, y: F, diameter: F, options: &Option<DrawOptions>) -> OutputDrawable;
 
     fn linear_path(
         &self,
@@ -65,11 +50,7 @@ pub trait RoughlyDrawableMakable<
         options: &Option<DrawOptions>,
     ) -> OutputDrawable;
 
-    fn polygon(
-        &self,
-        points: &[Point2<F>],
-        options: &Option<DrawOptions>
-    ) -> OutputDrawable;
+    fn polygon(&self, points: &[Point2<F>], options: &Option<DrawOptions>) -> OutputDrawable;
 
     fn arc(
         &self,
@@ -100,15 +81,7 @@ pub trait RoughlyDrawableMakable<
         options: &Option<DrawOptions>,
     ) -> OutputDrawable;
 
-    fn curve(
-        &self,
-        points: &[Point2<F>],
-        options: &Option<DrawOptions>
-    ) -> OutputDrawable;
+    fn curve(&self, points: &[Point2<F>], options: &Option<DrawOptions>) -> OutputDrawable;
 
-    fn path(
-        &self,
-        svg_path: String,
-        options: &Option<DrawOptions>
-    ) -> OutputDrawable;
+    fn path(&self, svg_path: String, options: &Option<DrawOptions>) -> OutputDrawable;
 }

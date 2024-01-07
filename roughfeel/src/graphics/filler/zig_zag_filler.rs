@@ -3,15 +3,14 @@ use std::marker::PhantomData;
 
 use nalgebra::{Point2, Scalar};
 use nalgebra_glm::RealNumber;
-use num_traits::{Float, FloatConst, FromPrimitive};
 
 use super::scan_line_hachure::polygon_hachure_lines;
 
 use super::traits::PatternFiller;
-use crate::graphics::{_c, _to_f32};
 use crate::graphics::drawable::DrawOptions;
 use crate::graphics::drawable_ops::{Op, OpSet, OpSetType};
 use crate::graphics::geometry::{rotate_lines, rotate_points, Line};
+use crate::graphics::{_c, _to_f32, get_pi};
 
 pub struct ZigZagFiller<F> {
     _phantom: PhantomData<F>,
@@ -32,7 +31,7 @@ where
         o2.set_hachure_gap(Some(_to_f32(gap)));
         let lines = polygon_hachure_lines(polygon_list.borrow_mut(), &o2);
         let zig_zag_angle =
-            (_c::<F>(f32::PI()) / _c::<F>(180.0)) * _c::<F>(o.hachure_angle.unwrap_or(0.0));
+            (_c::<F>(get_pi::<f32>()) / _c::<F>(180.0)) * _c::<F>(o.hachure_angle.unwrap_or(0.0));
         let mut zig_zag_lines = vec![];
         let dgx = gap * _c::<F>(0.5) * zig_zag_angle.cos();
         let dgy = gap * _c::<F>(0.5) * zig_zag_angle.sin();
