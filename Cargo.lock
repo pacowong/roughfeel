@@ -1107,6 +1107,7 @@ dependencies = [
 name = "roughfeel"
 version = "0.1.0"
 dependencies = [
+ "approx",
  "derive_builder",
  "nalgebra",
  "nalgebra-glm",
