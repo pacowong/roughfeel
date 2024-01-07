@@ -1,4 +1,4 @@
-// Copy from https://github.com/orhanbalci/rough-rs/blob/main/roughr/src/geometry.rs
+// Reference from https://github.com/orhanbalci/rough-rs/blob/main/roughr/src/geometry.rs
 use nalgebra::{Point2, Vector2, Rotation2};
 use nalgebra_glm::RealNumber;
 

@@ -1,10 +1,7 @@
 use derive_builder::Builder;
 use rand::{random, Rng, SeedableRng};
 use rand_chacha::ChaCha8Rng;
-use nalgebra::{Point2, Scalar};
 use nalgebra_glm::RealNumber;
-// use euclid::Trig;
-use num_traits::Float;
 use palette::Srgba;
 
 use super::{
@@ -122,20 +119,15 @@ impl DrawOptions {
     pub fn random(&mut self) -> f64 {
         match &mut self.randomizer {
             Some(r) => r.gen(),
-            None => match self.seed {
-                Some(s) => {
-                    self.randomizer = Some(ChaCha8Rng::seed_from_u64(s));
-                    match &mut self.randomizer {
-                        Some(r1) => r1.gen(),
-                        None => 0.0,
-                    }
-                }
-                None => {
-                    self.randomizer = Some(ChaCha8Rng::seed_from_u64(random()));
-                    match &mut self.randomizer {
-                        Some(r1) => r1.gen(),
-                        None => 0.0,
-                    }
+            None => {
+                let s = match self.seed {
+                    Some(s) => s,
+                    None => random(),
+                };
+                self.randomizer = Some(ChaCha8Rng::seed_from_u64(s));
+                match &mut self.randomizer {
+                    Some(r1) => r1.gen(),
+                    None => 0.0,
                 }
             },
         }
@@ -182,7 +174,6 @@ impl<AF: RealNumber> Drawable<OpSet<AF>> for RoughlyDrawable<OpSet<AF>> {
         Self {
             shape: shape.into(),
             options: options.clone(),
-            // .unwrap_or_else(|| self.default_options.clone()),
             opsets: Vec::from_iter(sets.iter().cloned()),
         }
     }
