@@ -1,9 +1,6 @@
 // Copy from https://github.com/orhanbalci/rough-rs/blob/main/roughr/src/geometry.rs
-use nalgebra::{Point2, Vector2, Rotation2, Scalar};
+use nalgebra::{Point2, Vector2, Rotation2};
 use nalgebra_glm::RealNumber;
-// use euclid::default::Point2;
-// use euclid::{Angle, Translation2D, Trig, Vector2D};
-use num_traits::{Float, FromPrimitive};
 
 use super::_c;
 
@@ -30,6 +27,7 @@ pub struct BezierCubic<F: RealNumber> {
 
 impl<F: RealNumber> Line<F> {
     pub fn from(points: &[Point2<F>]) -> Self {
+        assert_eq!(points.len(), 2);
         Line {
             start_point: points[0],
             end_point: points[1],
@@ -45,10 +43,11 @@ impl<F: RealNumber> Line<F> {
     }
 
     /// Rotate a line by `degrees` around a `center`. The center may not be the midpoint of the line.
-    pub fn rotate(&mut self, center: &Point2<F>, degrees: F) {
+    pub fn rotate(&mut self, center: &Point2<F>, degrees: F) -> &mut Self {
         let rotated_end_points = rotate_points(&[self.start_point, self.end_point], center, degrees);
         self.start_point = rotated_end_points[0];
         self.end_point = rotated_end_points[1];
+        self
     }
 }
 
@@ -64,12 +63,7 @@ pub fn rotate_points<F: RealNumber>(
     let angle = degree_to_radians(degrees);
     let translation_to_center = Vector2::new(center.x, center.y);
     let rot_mat = Rotation2::new(angle);
-    rot_mat * points[0];
-    // let translation = Translation2D::new(-center.x, -center.y);
-    // let transformation = translation
-    //     .to_transform()
-    //     .then_rotate(angle)
-    //     .then_translate(Vector2D::new(center.x, center.y));
+    // Translate to origin -> Rotate by angle (rad.) -> Translate to the original center
     return points
         .iter()
         .map(|&p| (rot_mat * (p - translation_to_center) + translation_to_center))
@@ -97,29 +91,46 @@ pub fn convert_bezier_quadratic_to_cubic<F: RealNumber>(
 ) -> BezierCubic<F> {
     // This can be verified by substituting the following points in the cubic Bézier curves.
     // You will obtain the quadratic cubic Bézier curves.
-    let cubic_x1 = bezier_quadratic.start.x
-        + _c::<F>(2.0 / 3.0) * (bezier_quadratic.cp.x - bezier_quadratic.start.x);
-    let cubic_y1 = bezier_quadratic.start.y
-        + _c::<F>(2.0 / 3.0) * (bezier_quadratic.cp.y - bezier_quadratic.start.y);
-    let cubic_x2 = bezier_quadratic.end.x
-        + _c::<F>(2.0 / 3.0) * (bezier_quadratic.cp.x - bezier_quadratic.end.x);
-    let cubic_y2 = bezier_quadratic.end.y
-        + _c::<F>(2.0 / 3.0) * (bezier_quadratic.cp.y - bezier_quadratic.end.y);
-
+    // https://fontforge.org/docs/techref/bezier.html#converting-truetype-to-postscript
+    let scaling_factor = F::from_f64(2.0/3.0).unwrap();
+    let cubic_pt1 = bezier_quadratic.start + (bezier_quadratic.cp - bezier_quadratic.start) * scaling_factor;
+    let cubic_pt2 = bezier_quadratic.end + (bezier_quadratic.cp - bezier_quadratic.end) * scaling_factor;
     BezierCubic {
         start: bezier_quadratic.start,
-        cp1: Point2::new(cubic_x1, cubic_y1),
-        cp2: Point2::new(cubic_x2, cubic_y2),
+        cp1: cubic_pt1,
+        cp2: cubic_pt2,
         end: bezier_quadratic.end,
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use approx::relative_eq;
     use nalgebra::Point2;
+
+    use super::{BezierCubic, BezierQuadratic, convert_bezier_quadratic_to_cubic};
+
     #[test]
     fn line_length() {
         let l = super::Line::from(&[Point2::new(1.0, 1.0), Point2::new(2.0, 2.0)]);
         assert_eq!(l.length(), f32::sqrt(2.0));
     }
+
+    #[test]
+    fn line_rotate() {
+        let mut l = super::Line::from(&[Point2::new(1.0, 1.0), Point2::new(2.0, 2.0)]);
+        l.rotate(&Point2::new(0.0, 0.0), 45.0);
+        assert!(relative_eq!(l.start_point, Point2::new(0.0, f64::sqrt(2.0)), epsilon = 1.0e-7));
+        assert!(relative_eq!(l.end_point, Point2::new(0.0, 2.0*f64::sqrt(2.0)), epsilon = 1.0e-7));
+
+        l.rotate(&Point2::new(0.0, 0.0), -35.0).rotate(&Point2::new(0.0, 0.0), -10.0);
+        assert!(relative_eq!(l.start_point, Point2::new(1.0, 1.0), epsilon = 1.0e-7));
+        assert!(relative_eq!(l.end_point, Point2::new(2.0, 2.0), epsilon = 1.0e-7));
+
+        l.rotate(&Point2::new(1.0, 10.0), 45.0);
+        assert!(relative_eq!(l.start_point, Point2::new(7.363961030678928, 3.636038969321072), epsilon = 1.0e-7));
+        assert!(relative_eq!(l.end_point, Point2::new(7.363961030678928, 5.050252531694167), epsilon = 1.0e-7));
+    }
+
+
 }
