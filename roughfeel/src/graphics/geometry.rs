@@ -2,8 +2,6 @@
 use nalgebra::{Point2, Vector2, Rotation2};
 use nalgebra_glm::RealNumber;
 
-use super::_c;
-
 #[derive(Clone, Debug, PartialEq)]
 pub struct Line<F: RealNumber> {
     pub start_point: Point2<F>,
@@ -32,10 +30,6 @@ impl<F: RealNumber> Line<F> {
             start_point: points[0],
             end_point: points[1],
         }
-    }
-
-    pub fn as_points(&self) -> Vec<Point2<F>> {
-        return vec![self.start_point, self.end_point];
     }
 
     pub fn length(&self) -> F {
