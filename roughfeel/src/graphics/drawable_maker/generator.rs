@@ -1,12 +1,8 @@
 use std::fmt::{Display, Write};
 use std::marker::PhantomData;
-use std::ops::MulAssign;
 
-use nalgebra::{Point2, Scalar};
+use nalgebra::Point2;
 use nalgebra_glm::RealNumber;
-// use euclid::default::Point2D;
-// use euclid::Trig;
-use num_traits::{Float, FromPrimitive};
 use points_on_curve::{curve_to_bezier, points_on_bezier_curves};
 
 use crate::graphics::_c;
@@ -19,11 +15,9 @@ use crate::graphics::renderer::{
     bezier_cubic, bezier_quadratic, curve, ellipse_with_params, generate_ellipse_params, line,
     linear_path, pattern_fill_arc, pattern_fill_polygons, rectangle, solid_fill_polygon, svg_path,
 };
+use crate::graphics::drawable_maker::RoughlyDrawableMakable;
 
-pub struct Generator<OpSetT: OpSetTrait> {
-    default_options: DrawOptions,
-    phantom_data_opsett: PhantomData<OpSetT>,
-}
+use super::Generator;
 
 impl<F: RealNumber, OpSetT: OpSetTrait<F = F>> Default for Generator<OpSetT> {
     fn default() -> Self {
@@ -105,7 +99,7 @@ impl<F: RealNumber> Generator<OpSet<F>>
 
     pub fn to_paths(drawable: RoughlyDrawable<OpSet<F>>) -> Vec<PathInfo>
     where
-        F: RealNumber + FromPrimitive + Display,
+        F: RealNumber + Display,
     {
         let sets = drawable.opsets;
         let o = drawable.options;
@@ -144,113 +138,12 @@ impl<F: RealNumber> Generator<OpSet<F>>
     }
 }
 
-pub trait RoughlyDrawableMaker<
-    F: RealNumber + FromPrimitive + MulAssign + Display,
-    OpSetT,
-    OutputDrawable,
-> where
-    OpSetT: OpSetTrait<F = F>,
-    OutputDrawable: Drawable<OpSetT>,
-{
-    // This trait contains all primitive shapes
-    // type OutputDrawable: Drawable<OpSetT: OpSetTrait, F=F>;
-
-    fn line(
-        &self,
-        x1: F,
-        y1: F,
-        x2: F,
-        y2: F,
-        options: &Option<DrawOptions>
-    ) -> OutputDrawable;
-
-    fn rectangle(
-        &self,
-        x: F,
-        y: F,
-        width: F,
-        height: F,
-        options: &Option<DrawOptions>,
-    ) -> OutputDrawable;
-
-    fn ellipse(
-        &self,
-        x: F,
-        y: F,
-        width: F,
-        height: F,
-        options: &Option<DrawOptions>,
-    ) -> OutputDrawable;
-
-    fn circle(
-        &self,
-        x: F,
-        y: F,
-        diameter: F,
-        options: &Option<DrawOptions>
-    ) -> OutputDrawable;
-
-    fn linear_path(
-        &self,
-        points: &[Point2<F>],
-        close: bool,
-        options: &Option<DrawOptions>,
-    ) -> OutputDrawable;
-
-    fn polygon(
-        &self,
-        points: &[Point2<F>],
-        options: &Option<DrawOptions>
-    ) -> OutputDrawable;
-
-    fn arc(
-        &self,
-        x: F,
-        y: F,
-        width: F,
-        height: F,
-        start: F,
-        stop: F,
-        closed: bool,
-        options: &Option<DrawOptions>,
-    ) -> OutputDrawable;
-
-    fn bezier_quadratic(
-        &self,
-        start: Point2<F>,
-        cp: Point2<F>,
-        end: Point2<F>,
-        options: &Option<DrawOptions>,
-    ) -> OutputDrawable;
-
-    fn bezier_cubic(
-        &self,
-        start: Point2<F>,
-        cp1: Point2<F>,
-        cp2: Point2<F>,
-        end: Point2<F>,
-        options: &Option<DrawOptions>,
-    ) -> OutputDrawable;
-
-    fn curve(
-        &self,
-        points: &[Point2<F>],
-        options: &Option<DrawOptions>
-    ) -> OutputDrawable;
-
-    fn path(
-        &self,
-        svg_path: String,
-        options: &Option<DrawOptions>
-    ) -> OutputDrawable;
-}
-
-impl<F: RealNumber + FromPrimitive + MulAssign + Display>
-    RoughlyDrawableMaker<F, OpSet<F>, RoughlyDrawable<OpSet<F>>> for Generator<OpSet<F>>
+impl<F: RealNumber + Display>
+    RoughlyDrawableMakable<F, OpSet<F>, RoughlyDrawable<OpSet<F>>> for Generator<OpSet<F>>
 {
     fn line(&self, x1: F, y1: F, x2: F, y2: F, options: &Option<DrawOptions>) -> RoughlyDrawable<OpSet<F>>
     where
-        F: RealNumber + FromPrimitive,
+        F: RealNumber,
     {
         let x = self.d(
             "line".to_owned(),
@@ -277,7 +170,7 @@ impl<F: RealNumber + FromPrimitive + MulAssign + Display>
         options: &Option<DrawOptions>,
     ) -> RoughlyDrawable<OpSet<F>>
     where
-        F: RealNumber + FromPrimitive,
+        F: RealNumber,
     {
         let mut paths = vec![];
         let mut options = options
@@ -313,7 +206,7 @@ impl<F: RealNumber + FromPrimitive + MulAssign + Display>
         options: &Option<DrawOptions>,
     ) -> RoughlyDrawable<OpSet<F>>
     where
-        F: RealNumber + FromPrimitive,
+        F: RealNumber,
     {
         let mut paths = vec![];
         let mut options = options
@@ -341,7 +234,7 @@ impl<F: RealNumber + FromPrimitive + MulAssign + Display>
 
     fn circle(&self, x: F, y: F, diameter: F, options: &Option<DrawOptions>) -> RoughlyDrawable<OpSet<F>>
     where
-        F: RealNumber + FromPrimitive,
+        F: RealNumber,
     {
         let mut shape = self.ellipse(x, y, diameter, diameter, options);
         shape.shape = "circle".into();
@@ -355,7 +248,7 @@ impl<F: RealNumber + FromPrimitive + MulAssign + Display>
         options: &Option<DrawOptions>,
     ) -> RoughlyDrawable<OpSet<F>>
     where
-        F: RealNumber + FromPrimitive,
+        F: RealNumber,
     {
         let mut options = options
             .clone()
@@ -379,7 +272,7 @@ impl<F: RealNumber + FromPrimitive + MulAssign + Display>
         options: &Option<DrawOptions>,
     ) -> RoughlyDrawable<OpSet<F>>
     where
-        F: RealNumber + FromPrimitive,
+        F: RealNumber,
     {
         let mut options = options
             .clone()
@@ -438,7 +331,7 @@ impl<F: RealNumber + FromPrimitive + MulAssign + Display>
         options: &Option<DrawOptions>,
     ) -> RoughlyDrawable<OpSet<F>>
     where
-        F: RealNumber + FromPrimitive + MulAssign + Display,
+        F: RealNumber + Display,
     {
         let mut paths = vec![];
         let mut options = options
@@ -480,7 +373,7 @@ impl<F: RealNumber + FromPrimitive + MulAssign + Display>
         options: &Option<DrawOptions>,
     ) -> RoughlyDrawable<OpSet<F>>
     where
-        F: RealNumber + FromPrimitive + MulAssign + Display,
+        F: RealNumber + Display,
     {
         let mut paths = vec![];
         let mut options = options
@@ -545,7 +438,7 @@ impl<F: RealNumber + FromPrimitive + MulAssign + Display>
 
     fn polygon(&self, points: &[Point2<F>], options: &Option<DrawOptions>) -> RoughlyDrawable<OpSet<F>>
     where
-        F: RealNumber + FromPrimitive + MulAssign + Display,
+        F: RealNumber + Display,
     {
         let mut options = options
             .clone()
@@ -570,7 +463,7 @@ impl<F: RealNumber + FromPrimitive + MulAssign + Display>
 
     fn path(&self, d: String, options: &Option<DrawOptions>) -> RoughlyDrawable<OpSet<F>>
     where
-        F: RealNumber + FromPrimitive + MulAssign + Display,
+        F: RealNumber + Display,
     {
         let mut options = options.clone().unwrap_or(self.default_options.clone());
         let mut paths = vec![];

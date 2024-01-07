@@ -14,7 +14,7 @@ use roughfeel::graphics::drawable_ops::OpSet;
 use roughfeel::renderer_engine::kurbo_drawable::{KurboDrawable, KurboOpSet};
 use roughfeel::renderer_engine::kurbo_drawable_maker::KurboDrawableMaker;
 
-use roughfeel::graphics::drawable_maker::{Generator, RoughlyDrawableMaker};
+use roughfeel::graphics::drawable_maker::{Generator, RoughlyDrawableMakable};
 use roughfeel::graphics::paint::FillStyle;
 use roughfeel::*;
 

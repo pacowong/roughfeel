@@ -1,8 +1,5 @@
-use nalgebra::{Point2, Scalar};
+use nalgebra::Point2;
 use nalgebra_glm::RealNumber;
-// use euclid::default::Point2;
-// use euclid::Trig;
-use num_traits::Float;
 
 use super::drawable::OpSetTrait;
 

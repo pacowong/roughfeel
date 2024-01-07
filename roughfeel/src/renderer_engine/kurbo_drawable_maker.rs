@@ -7,7 +7,7 @@ use nalgebra_glm::RealNumber;
 
 use crate::graphics::{
     drawable::{DrawOptions, Drawable},
-    drawable_maker::{Generator, RoughlyDrawableMaker},
+    drawable_maker::{Generator, RoughlyDrawableMakable},
     drawable_ops::OpSet,
 };
 
@@ -41,7 +41,7 @@ impl<F: RealNumber + FromPrimitive + MulAssign + Display,
 impl<
         F: RealNumber + MulAssign + Display,
         OutputDrawable: Drawable<KurboOpSet<F>>,
-    > RoughlyDrawableMaker<F, KurboOpSet<F>, KurboDrawable<F>>
+    > RoughlyDrawableMakable<F, KurboOpSet<F>, KurboDrawable<F>>
     for KurboDrawableMaker<F, OutputDrawable>
 {
     fn line(&self, x1: F, y1: F, x2: F, y2: F, options: &Option<DrawOptions>) -> KurboDrawable<F> {
