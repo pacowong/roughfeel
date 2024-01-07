@@ -132,5 +132,19 @@ mod tests {
         assert!(relative_eq!(l.end_point, Point2::new(7.363961030678928, 5.050252531694167), epsilon = 1.0e-7));
     }
 
+    #[test]
+    fn test_convert_bezier_quadratic_to_cubic() {
+        let bquad = BezierQuadratic::<f64> {
+            start: Point2::new(-3.0, 6.0),
+            cp: Point2::new(3.0, 3.0),
+            end: Point2::new(9.0, 12.0),
+        };
+        let result = convert_bezier_quadratic_to_cubic(bquad);
+        assert_eq!(result, BezierCubic::<f64> {
+            start: Point2::new(-3.0, 6.0),
+            cp1: Point2::new(-3.0+4.0, 6.0-2.0),
+            cp2: Point2::new(9.0-4.0, 12.0-6.0),
+            end: Point2::new(9.0, 12.0) });
+    }
 
 }
