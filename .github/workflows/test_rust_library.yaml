@@ -14,6 +14,7 @@ jobs:
       - name: install tools for Ubuntu environment
         run: |
           sudo apt-get update && sudo apt-get -y install gfortran libopenblas-dev libgtk-4-dev
+          rustup component add rustfmt
         if: matrix.os == 'ubuntu-latest'
 
       - name: checkout repository
@@ -22,3 +23,4 @@ jobs:
       - name: run tests on ${{ matrix.os }}
         run: |
           cargo test
+          cargo fmt --all -- --check
