@@ -1,16 +1,12 @@
 use std::fmt::Display;
 use std::ops::MulAssign;
 
-use num_traits::{Float, FromPrimitive};
-
-use nalgebra::{Point2, Scalar};
+use nalgebra::Point2;
 use nalgebra_glm::RealNumber;
-// use euclid::{default::Point2, Trig};
 
 use super::drawable_ops::OpSet;
 
 use super::drawable::{DrawOptions, Drawable};
-use super::renderer;
 
 /*
 struct RoughRenderContext {}
@@ -23,7 +19,7 @@ impl RoughRenderContext {
     fn d<T, F, OutputDrawable: Drawable>(&self, name: T, op_sets: &[OpSet<F>], options: &Option<DrawOptions>) -> OutputDrawable
     where
         T: Into<String>,
-        F: Float + FromPrimitive,
+        F: Float,
     {
         OutputDrawable::draw {
             shape: name.into(),
@@ -36,7 +32,7 @@ impl RoughRenderContext {
 
     pub fn line<F, OutputDrawable: Drawable>(&self, x1: F, y1: F, x2: F, y2: F, options: &Option<DrawOptions>) -> OutputDrawable
     where
-        F: Float + FromPrimitive,
+        F: Float,
     {
         self.d(
             "line",
@@ -55,11 +51,7 @@ impl RoughRenderContext {
 }
 */
 
-pub trait RoughlyCanvas<
-    F: RealNumber + FromPrimitive + MulAssign + Display,
-    D: Drawable<OpSet<F>>,
->
-{
+pub trait RoughlyCanvas<F: RealNumber + MulAssign + Display, D: Drawable<OpSet<F>>> {
     fn draw_line(&self, x1: F, y1: F, x2: F, y2: F, options: DrawOptions);
 
     fn draw_rectangle(&self, x: F, y: F, width: F, height: F, options: DrawOptions);
@@ -76,13 +68,7 @@ pub trait RoughlyCanvas<
 
     fn draw_bezier_quadratic(&self, start: Point2<F>, cp: Point2<F>, end: Point2<F>);
 
-    fn draw_bezier_cubic(
-        &self,
-        start: Point2<F>,
-        cp1: Point2<F>,
-        cp2: Point2<F>,
-        end: Point2<F>,
-    );
+    fn draw_bezier_cubic(&self, start: Point2<F>, cp1: Point2<F>, cp2: Point2<F>, end: Point2<F>);
 
     fn draw_curve(&self, points: &[Point2<F>]);
 

@@ -15,7 +15,7 @@ readme = "README.md"
 
 [dependencies]
 #roughr = {path = "../roughly_core", version = "0.6.0"}
-roughr = {path = "../roughr", version = "0.6.0"}
+roughfeel = {path = "../roughfeel", version = "0.1.0"}
 num-traits = "0.2"
 euclid = "0.22"
 piet = "0.6"

@@ -1,11 +1,7 @@
 use std::fmt::Display;
-use std::ops::MulAssign;
 
-use nalgebra::{Point2, Scalar};
+use nalgebra::Point2;
 use nalgebra_glm::RealNumber;
-// use euclid::default::Point2;
-// use euclid::Trig;
-use num_traits::{Float, FromPrimitive};
 use points_on_curve::{points_on_bezier_curves, simplify};
 use svg_path_ops::{absolutize, normalize};
 use svgtypes::{PathParser, PathSegment};
@@ -31,17 +27,17 @@ where
     let mut start = Point2::new(_c::<F>(0.0), _c::<F>(0.0));
     let mut pending_curve: Vec<Point2<F>> = vec![];
 
-    let append_pending_curve =
-        |current_points: &mut Vec<Point2<F>>, pending_curve: &mut Vec<Point2<F>>| {
-            if pending_curve.len() >= 4 {
-                current_points.append(&mut points_on_bezier_curves(
-                    &pending_curve[..],
-                    tolerance.unwrap_or(_c(0.0)),
-                    None,
-                ));
-            }
-            pending_curve.clear();
-        };
+    let append_pending_curve = |current_points: &mut Vec<Point2<F>>,
+                                pending_curve: &mut Vec<Point2<F>>| {
+        if pending_curve.len() >= 4 {
+            current_points.append(&mut points_on_bezier_curves(
+                &pending_curve[..],
+                tolerance.unwrap_or(_c(0.0)),
+                None,
+            ));
+        }
+        pending_curve.clear();
+    };
 
     let mut append_pending_points =
         |current_points: &mut Vec<Point2<F>>, pending_curve: &mut Vec<Point2<F>>| {

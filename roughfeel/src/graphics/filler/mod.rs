@@ -2,7 +2,6 @@ use std::borrow::BorrowMut;
 
 use nalgebra::{Point2, Scalar};
 use nalgebra_glm::RealNumber;
-use num_traits::{Float, FromPrimitive};
 
 use self::dashed_filler::DashedFiller;
 use self::dot_filler::DotFiller;

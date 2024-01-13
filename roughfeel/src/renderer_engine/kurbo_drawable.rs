@@ -8,8 +8,6 @@ use palette::Srgba;
 use piet::kurbo::{BezPath, PathEl, Point};
 use piet::{Color, LineJoin, RenderContext, StrokeStyle};
 
-use num_traits::{Float, FromPrimitive};
-
 use nalgebra::{Point2, Scalar};
 use nalgebra_glm::RealNumber;
 
@@ -56,11 +54,7 @@ impl<FT: RealNumber> Drawable<KurboOpSet<FT>> for KurboDrawable<FT> {
 
     // }
 
-    fn draw(
-        shape: String,
-        options: DrawOptions,
-        sets: Vec<KurboOpSet<FT>>,
-    ) -> KurboDrawable<FT> {
+    fn draw(shape: String, options: DrawOptions, sets: Vec<KurboOpSet<FT>>) -> KurboDrawable<FT> {
         Self {
             shape: shape.into(),
             options: options.clone(),
@@ -202,7 +196,7 @@ pub trait ToKurboOpset<F: RealNumber> {
     fn to_kurbo_opset(self) -> KurboOpSet<F>;
 }
 
-impl<F: RealNumber + FromPrimitive> ToKurboOpset<F> for OpSet<F> {
+impl<F: RealNumber> ToKurboOpset<F> for OpSet<F> {
     fn to_kurbo_opset(self) -> KurboOpSet<F> {
         KurboOpSet {
             op_set_type: self.op_set_type.clone(),
@@ -213,7 +207,7 @@ impl<F: RealNumber + FromPrimitive> ToKurboOpset<F> for OpSet<F> {
     }
 }
 
-fn opset_to_shape<F: RealNumber + FromPrimitive>(op_set: &OpSet<F>) -> BezPath {
+fn opset_to_shape<F: RealNumber>(op_set: &OpSet<F>) -> BezPath {
     let mut path: BezPath = BezPath::new();
     for item in op_set.ops.iter() {
         match item.op {
@@ -222,18 +216,9 @@ fn opset_to_shape<F: RealNumber + FromPrimitive>(op_set: &OpSet<F>) -> BezPath {
                 _to_f64(item.data[1]),
             ))]),
             OpType::BCurveTo => path.extend([PathEl::CurveTo(
-                Point::new(
-                    _to_f64(item.data[0]),
-                    _to_f64(item.data[1]),
-                ),
-                Point::new(
-                    _to_f64(item.data[2]),
-                    _to_f64(item.data[3]),
-                ),
-                Point::new(
-                    _to_f64(item.data[4]),
-                    _to_f64(item.data[5]),
-                ),
+                Point::new(_to_f64(item.data[0]), _to_f64(item.data[1])),
+                Point::new(_to_f64(item.data[2]), _to_f64(item.data[3])),
+                Point::new(_to_f64(item.data[4]), _to_f64(item.data[5])),
             )]),
             OpType::LineTo => {
                 path.extend([PathEl::LineTo(Point::new(
@@ -250,7 +235,7 @@ pub trait ToKurboDrawable<F: RealNumber> {
     fn to_kurbo_drawable(self) -> KurboDrawable<F>;
 }
 
-impl<F: RealNumber + FromPrimitive> ToKurboDrawable<F> for RoughlyDrawable<OpSet<F>> {
+impl<F: RealNumber> ToKurboDrawable<F> for RoughlyDrawable<OpSet<F>> {
     fn to_kurbo_drawable(self) -> KurboDrawable<F> {
         KurboDrawable {
             shape: self.shape,

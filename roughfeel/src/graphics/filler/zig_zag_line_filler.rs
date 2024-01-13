@@ -1,17 +1,16 @@
 use std::borrow::BorrowMut;
 use std::marker::PhantomData;
 
-use nalgebra::{Point2};
+use nalgebra::Point2;
 use nalgebra_glm::RealNumber;
-use num_traits::{Float, FloatConst, FromPrimitive};
 
 use super::scan_line_hachure::polygon_hachure_lines;
 use super::traits::PatternFiller;
 
-use crate::graphics::{_c, _to_u64, _to_f32};
 use crate::graphics::drawable::DrawOptions;
 use crate::graphics::drawable_ops::{Op, OpSet, OpSetType};
 use crate::graphics::geometry::{rotate_lines, rotate_points, Line};
+use crate::graphics::{_c, _to_f32, _to_u64, get_pi};
 
 use crate::graphics::renderer::_double_line;
 
@@ -74,17 +73,13 @@ impl<F: RealNumber> ZigZagLineFiller<F> {
                 let lstart = _c::<F>(i as f32) * _c::<F>(2.0) * zig_zag_offset;
                 let lend = _c::<F>((i + 1) as f32) * _c::<F>(2.0) * zig_zag_offset;
                 let dz = (zig_zag_offset.powi(2) * _c::<F>(2.0)).sqrt();
-                let start: Point2<F> = Point2::new(
-                    p1.x + lstart * alpha.cos(),
-                    p1.y + lstart * alpha.sin(),
-                );
-                let end: Point2<F> = Point2::new(
-                    p1.x + lend * alpha.cos(),
-                    p1.y + lend * alpha.sin(),
-                );
+                let start: Point2<F> =
+                    Point2::new(p1.x + lstart * alpha.cos(), p1.y + lstart * alpha.sin());
+                let end: Point2<F> =
+                    Point2::new(p1.x + lend * alpha.cos(), p1.y + lend * alpha.sin());
                 let middle: Point2<F> = Point2::new(
-                    start.x + dz * (alpha + _c::<F>(f32::PI() / 4.0)).cos(),
-                    start.y + dz * (alpha + _c::<F>(f32::PI() / 4.0)).sin(),
+                    start.x + dz * (alpha + _c::<F>(get_pi::<f32>() / 4.0)).cos(),
+                    start.y + dz * (alpha + _c::<F>(get_pi::<f32>() / 4.0)).sin(),
                 );
                 ops.extend(_double_line(start.x, start.y, middle.x, middle.y, o, false));
 

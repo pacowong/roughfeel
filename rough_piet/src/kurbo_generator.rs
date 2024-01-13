@@ -8,13 +8,13 @@ use palette::rgb::Rgba;
 use palette::Srgba;
 use piet::kurbo::{BezPath, PathEl, Point};
 use piet::{Color, LineJoin, RenderContext, StrokeStyle};
-use roughr::core::{Drawable, OpSet, OpSetType, OpType, Options};
-use roughr::generator::Generator;
+use roughfeel::graphics::{drawable::RoughlyDrawable, drawable_ops::OpSet, drawable_ops::OpSetType, drawable_ops::OpType, drawable::DrawOptions};
+use roughfeel::graphics::drawable_maker::Generator;
 
 #[derive(Default)]
 pub struct KurboGenerator {
-    gen: Generator,
-    options: Option<Options>,
+    gen: Generator::<OpSet<f32>>,
+    options: Option<DrawOptions>,
 }
 
 #[derive(Clone)]
@@ -42,7 +42,7 @@ impl<F: Float + Trig + FromPrimitive> ToKurboOpset<F> for OpSet<F> {
 
 pub struct KurboDrawable<F: Float + Trig> {
     pub shape: String,
-    pub options: Options,
+    pub options: DrawOptions,
     pub sets: Vec<KurboOpset<F>>,
 }
 
@@ -50,7 +50,7 @@ pub trait ToKurboDrawable<F: Float + Trig> {
     fn to_kurbo_drawable(self) -> KurboDrawable<F>;
 }
 
-impl<F: Float + Trig + FromPrimitive> ToKurboDrawable<F> for Drawable<F> {
+impl<F: Float + Trig + FromPrimitive> ToKurboDrawable<F> for RoughlyDrawable<F> {
     fn to_kurbo_drawable(self) -> KurboDrawable<F> {
         KurboDrawable {
             shape: self.shape,
@@ -61,7 +61,7 @@ impl<F: Float + Trig + FromPrimitive> ToKurboDrawable<F> for Drawable<F> {
 }
 
 impl KurboGenerator {
-    pub fn new(options: Options) -> Self {
+    pub fn new(options: DrawOptions) -> Self {
         KurboGenerator { gen: Generator::default(), options: Some(options) }
     }
 }
@@ -78,10 +78,10 @@ impl<F: Float + Trig> KurboDrawable<F> {
                         let mut ss = StrokeStyle::new();
                         ss.set_dash_pattern(stroke_line_dash.as_slice());
                         ss.set_dash_offset(self.options.stroke_line_dash_offset.unwrap_or(1.0f64));
-                        ss.set_line_cap(convert_line_cap_from_roughr_to_piet(
+                        ss.set_line_cap(convert_line_cap_from_roughfeel_to_piet(
                             self.options.line_cap,
                         ));
-                        ss.set_line_join(convert_line_join_from_roughr_to_piet(
+                        ss.set_line_join(convert_line_join_from_roughfeel_to_piet(
                             self.options.line_join,
                         ));
 
@@ -158,10 +158,10 @@ impl<F: Float + Trig> KurboDrawable<F> {
                         let mut ss = StrokeStyle::new();
                         ss.set_dash_pattern(fill_line_dash.as_slice());
                         ss.set_dash_offset(self.options.fill_line_dash_offset.unwrap_or(0.0f64));
-                        ss.set_line_cap(convert_line_cap_from_roughr_to_piet(
+                        ss.set_line_cap(convert_line_cap_from_roughfeel_to_piet(
                             self.options.line_cap,
                         ));
-                        ss.set_line_join(convert_line_join_from_roughr_to_piet(
+                        ss.set_line_join(convert_line_join_from_roughfeel_to_piet(
                             self.options.line_join,
                         ));
                         let fill_color = self
@@ -342,24 +342,24 @@ impl KurboGenerator {
     }
 }
 
-fn convert_line_cap_from_roughr_to_piet(
-    roughr_line_cap: Option<roughr::core::LineCap>,
+fn convert_line_cap_from_roughfeel_to_piet(
+    roughfeel_line_cap: Option<roughfeel::graphics::paint::LineCap>,
 ) -> piet::LineCap {
-    match roughr_line_cap {
-        Some(roughr::core::LineCap::Butt) => piet::LineCap::Butt,
-        Some(roughr::core::LineCap::Round) => piet::LineCap::Round,
-        Some(roughr::core::LineCap::Square) => piet::LineCap::Square,
+    match roughfeel_line_cap {
+        Some(roughfeel::graphics::paint::LineCap::Butt) => piet::LineCap::Butt,
+        Some(roughfeel::graphics::paint::LineCap::Round) => piet::LineCap::Round,
+        Some(roughfeel::graphics::paint::LineCap::Square) => piet::LineCap::Square,
         None => piet::LineCap::Butt,
     }
 }
 
-fn convert_line_join_from_roughr_to_piet(
-    roughr_line_join: Option<roughr::core::LineJoin>,
+fn convert_line_join_from_roughfeel_to_piet(
+    roughfeel_line_join: Option<roughfeel::graphics::paint::LineJoin>,
 ) -> LineJoin {
-    match roughr_line_join {
-        Some(roughr::core::LineJoin::Miter { limit }) => LineJoin::Miter { limit },
-        Some(roughr::core::LineJoin::Round) => LineJoin::Round,
-        Some(roughr::core::LineJoin::Bevel) => LineJoin::Bevel,
+    match roughfeel_line_join {
+        Some(roughfeel::graphics::paint::LineJoin::Miter { limit }) => LineJoin::Miter { limit },
+        Some(roughfeel::graphics::paint::LineJoin::Round) => LineJoin::Round,
+        Some(roughfeel::graphics::paint::LineJoin::Bevel) => LineJoin::Bevel,
         None => LineJoin::Miter { limit: LineJoin::DEFAULT_MITER_LIMIT },
     }
 }

@@ -1,13 +1,11 @@
 use std::{fmt::Display, ops::MulAssign};
 
-use num_traits::{Float, FromPrimitive};
-
 use nalgebra::{Point2, Scalar};
 use nalgebra_glm::RealNumber;
 
 use crate::graphics::{
     drawable::{DrawOptions, Drawable},
-    drawable_maker::{Generator, RoughlyDrawableMaker},
+    drawable_maker::{Generator, RoughlyDrawableMakable},
     drawable_ops::OpSet,
 };
 
@@ -16,18 +14,14 @@ use super::kurbo_drawable::{KurboDrawable, KurboOpSet, ToKurboDrawable};
 use std::marker::PhantomData;
 
 #[derive(Default)]
-pub struct KurboDrawableMaker<
-    F: RealNumber + Display,
-    OutputDrawable: Drawable<KurboOpSet<F>>,
-> {
+pub struct KurboDrawableMaker<F: RealNumber + Display, OutputDrawable: Drawable<KurboOpSet<F>>> {
     gen: Generator<OpSet<F>>,
     phantom_data_f: PhantomData<F>,
     phantom_data_output_drawable: PhantomData<OutputDrawable>,
 }
 
-impl<F: RealNumber + FromPrimitive + MulAssign + Display,
-        OutputDrawable: Drawable<KurboOpSet<F>>,
-    > KurboDrawableMaker<F, OutputDrawable>
+impl<F: RealNumber + MulAssign + Display, OutputDrawable: Drawable<KurboOpSet<F>>>
+    KurboDrawableMaker<F, OutputDrawable>
 {
     pub fn new(gen: Generator<OpSet<F>>) -> Self {
         Self {
@@ -38,10 +32,8 @@ impl<F: RealNumber + FromPrimitive + MulAssign + Display,
     }
 }
 
-impl<
-        F: RealNumber + MulAssign + Display,
-        OutputDrawable: Drawable<KurboOpSet<F>>,
-    > RoughlyDrawableMaker<F, KurboOpSet<F>, KurboDrawable<F>>
+impl<F: RealNumber + MulAssign + Display, OutputDrawable: Drawable<KurboOpSet<F>>>
+    RoughlyDrawableMakable<F, KurboOpSet<F>, KurboDrawable<F>>
     for KurboDrawableMaker<F, OutputDrawable>
 {
     fn line(&self, x1: F, y1: F, x2: F, y2: F, options: &Option<DrawOptions>) -> KurboDrawable<F> {

@@ -1,8 +1,5 @@
-use nalgebra::{Point2, Scalar};
+use nalgebra::Point2;
 use nalgebra_glm::RealNumber;
-// use euclid::default::Point2;
-// use euclid::Trig;
-use num_traits::Float;
 
 use super::drawable::OpSetTrait;
 
@@ -22,7 +19,8 @@ pub enum OpSetType {
 
 /// A unified data structure that stores all drawing operations
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub struct Op<F: RealNumber> { //Paco: SIMD?
+pub struct Op<F: RealNumber> {
+    //Paco: SIMD?
     pub op: OpType,
     pub data: Vec<F>,
 }

@@ -1,8 +1,7 @@
 use std::borrow::BorrowMut;
 
-use nalgebra::{Point2};
+use nalgebra::Point2;
 use nalgebra_glm::RealNumber;
-use num_traits::{Float, FromPrimitive};
 
 use crate::graphics::drawable::DrawOptions;
 use crate::graphics::drawable_ops::OpSet;

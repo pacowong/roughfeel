@@ -1,10 +1,8 @@
 use std::borrow::BorrowMut;
 use std::marker::PhantomData;
 
-use nalgebra::{Point2, Scalar, Vector};
+use nalgebra::Point2;
 use nalgebra_glm::RealNumber;
-// use euclid::{point2, Trig};
-use num_traits::{Float, FromPrimitive};
 
 use super::scan_line_hachure::polygon_hachure_lines;
 use super::traits::PatternFiller;
@@ -86,20 +84,17 @@ impl<'a, F: RealNumber> DashedFiller<F> {
             }
             let alpha = ((p2.y - p1.y) / (p2.x - p1.x)).atan();
             let count: f64 = nalgebra::try_convert(count).unwrap(); //count.map.try_into().unwrap();
-            for i in 0..(count as u64) { //.try_into::<u32>::().to_u32().unwrap() {
+            for i in 0..(count as u64) {
+                //.try_into::<u32>::().to_u32().unwrap() {
                 let lstart = F::from_u64(i).unwrap() * (offset + gap); //F::from(i).unwrap() * (offset + gap);
                 let lend = lstart + offset;
                 let start = Point2::<F>::new(
-                    p1.x + (lstart * alpha.cos())
-                        + (start_offset * alpha.cos()),
-                    p1.y + lstart * alpha.sin()
-                        + (start_offset * alpha.sin()),
+                    p1.x + (lstart * alpha.cos()) + (start_offset * alpha.cos()),
+                    p1.y + lstart * alpha.sin() + (start_offset * alpha.sin()),
                 );
                 let end = Point2::<F>::new(
-                    p1.x + (lend * alpha.cos())
-                        + (start_offset * alpha.cos()),
-                    p1.y + (lend * alpha.sin())
-                        + (start_offset * alpha.sin()),
+                    p1.x + (lend * alpha.cos()) + (start_offset * alpha.cos()),
+                    p1.y + (lend * alpha.sin()) + (start_offset * alpha.sin()),
                 );
                 let line_ops = _double_line(start.x, start.y, end.x, end.y, o, false);
                 ops.extend(line_ops);
