@@ -1,0 +1,24 @@
+name: "Test Rust Library"
+
+on:
+  workflow_dispatch:
+  push:
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: install tools for Ubuntu environment
+        run: |
+          sudo apt-get update && sudo apt-get -y install gfortran libopenblas-dev
+        if: matrix.os == 'ubuntu-latest'
+
+      - name: checkout repository
+        uses: actions/checkout@v3
+
+      - name: run tests on ${{ matrix.os }}
+        run: |
+          cargo test
