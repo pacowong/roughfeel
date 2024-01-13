@@ -51,8 +51,7 @@ impl RoughRenderContext {
 }
 */
 
-pub trait RoughlyCanvas<F: RealNumber + MulAssign + Display, D: Drawable<OpSet<F>>>
-{
+pub trait RoughlyCanvas<F: RealNumber + MulAssign + Display, D: Drawable<OpSet<F>>> {
     fn draw_line(&self, x1: F, y1: F, x2: F, y2: F, options: DrawOptions);
 
     fn draw_rectangle(&self, x: F, y: F, width: F, height: F, options: DrawOptions);

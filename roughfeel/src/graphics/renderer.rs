@@ -95,13 +95,7 @@ pub struct EllipseResult<F: RealNumber> {
 ///     },
 /// );
 /// ```
-pub fn line<F: RealNumber>(
-    x1: F,
-    y1: F,
-    x2: F,
-    y2: F,
-    o: &mut DrawOptions,
-) -> OpSet<F> {
+pub fn line<F: RealNumber>(x1: F, y1: F, x2: F, y2: F, o: &mut DrawOptions) -> OpSet<F> {
     OpSet {
         op_set_type: OpSetType::Path,
         ops: _double_line(x1, y1, x2, y2, o, false),
@@ -244,20 +238,11 @@ pub fn linear_path<F: RealNumber>(
     }
 }
 
-pub fn polygon<F: RealNumber>(
-    points: &[Point2<F>],
-    o: &mut DrawOptions,
-) -> OpSet<F> {
+pub fn polygon<F: RealNumber>(points: &[Point2<F>], o: &mut DrawOptions) -> OpSet<F> {
     linear_path(points, true, o)
 }
 
-pub fn rectangle<F: RealNumber>(
-    x: F,
-    y: F,
-    width: F,
-    height: F,
-    o: &mut DrawOptions,
-) -> OpSet<F> {
+pub fn rectangle<F: RealNumber>(x: F, y: F, width: F, height: F, o: &mut DrawOptions) -> OpSet<F> {
     let points: Vec<Point2<F>> = vec![
         Point2::new(x, y),
         Point2::new(x + width, y),
@@ -322,13 +307,7 @@ pub fn curve<F: RealNumber>(points: &[Point2<F>], o: &mut DrawOptions) -> OpSet<
     }
 }
 
-pub fn ellipse<F: RealNumber>(
-    x: F,
-    y: F,
-    width: F,
-    height: F,
-    o: &mut DrawOptions,
-) -> OpSet<F> {
+pub fn ellipse<F: RealNumber>(x: F, y: F, width: F, height: F, o: &mut DrawOptions) -> OpSet<F> {
     let params = generate_ellipse_params(width, height, o);
     ellipse_with_params(x, y, o, &params).opset
 }

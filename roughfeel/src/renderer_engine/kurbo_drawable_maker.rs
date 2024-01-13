@@ -20,10 +20,8 @@ pub struct KurboDrawableMaker<F: RealNumber + Display, OutputDrawable: Drawable<
     phantom_data_output_drawable: PhantomData<OutputDrawable>,
 }
 
-impl<
-        F: RealNumber + MulAssign + Display,
-        OutputDrawable: Drawable<KurboOpSet<F>>,
-    > KurboDrawableMaker<F, OutputDrawable>
+impl<F: RealNumber + MulAssign + Display, OutputDrawable: Drawable<KurboOpSet<F>>>
+    KurboDrawableMaker<F, OutputDrawable>
 {
     pub fn new(gen: Generator<OpSet<F>>) -> Self {
         Self {

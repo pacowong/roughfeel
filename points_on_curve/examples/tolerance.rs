@@ -4,9 +4,9 @@
 use nalgebra::{Point2, Scalar};
 use piet::kurbo::{Circle, CubicBez, Point, TranslateScale, Vec2};
 use piet::{Color, RenderContext};
+use piet_cairo::CairoRenderContext;
 use piet_common::kurbo::Rect;
 use piet_common::Device;
-use piet_cairo::CairoRenderContext;
 use points_on_curve::points_on_bezier_curves;
 
 const WIDTH: usize = 740;
