@@ -22,7 +22,7 @@
 //! ## 🔧 Example
 //!
 //! ```rust
-//! use euclid::{default, point2};
+//! use nalgebra::Point2;
 //! use points_on_curve::points_on_bezier_curves;
 //!
 //! let input = vec![
@@ -81,7 +81,7 @@ where
 ///
 /// # examples
 /// ```
-/// use euclid::point2;
+/// use nalgebra::Point2;
 /// use points_on_curve::distance_to_segment_squared;
 /// let expected = 1.0;
 /// let result = distance_to_segment_squared(Point2::new(0.0, 1.0), Point2::new(-1.0, 0.0), Point2::new(1.0, 0.0));
