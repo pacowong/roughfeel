@@ -1,8 +1,8 @@
 // Copy from https://github.com/orhanbalci/rough-rs/blob/main/roughr/src/renderer.rs
 use std::borrow::BorrowMut;
 
-use nalgebra::{Point2};
-use nalgebra_glm::{RealNumber, sqrt};
+use nalgebra::Point2;
+use nalgebra_glm::RealNumber;
 use svg_path_ops::{absolutize, normalize};
 use svgtypes::{PathParser, PathSegment};
 

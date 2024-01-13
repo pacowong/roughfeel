@@ -9,7 +9,7 @@ use super::traits::PatternFiller;
 use crate::graphics::drawable::DrawOptions;
 use crate::graphics::drawable_ops::OpSet;
 use crate::graphics::geometry::{rotate_lines, rotate_points, Line};
-use crate::graphics::{_c, _to_f64, _to_u64};
+use crate::graphics::{_c, _to_f64};
 
 #[derive(Clone)]
 struct EdgeEntry<F: RealNumber> {
@@ -71,13 +71,16 @@ fn straight_hachure_lines<F: Scalar>(polygon_list: &mut [Vec<Point2<F>>], gap: F
 where
     F: RealNumber,
 {
+    // Reference: https://github.com/gicentre/handy/blob/main/Handy/src/org/gicentre/handy/HandyRenderer.java
+    // Sketchy Rendering for Information Visualization
     let mut vertex_array: Vec<Vec<Point2<F>>> = vec![];
     for polygon in polygon_list.iter_mut() {
         if polygon.first() != polygon.last() {
+            // Close a polygon
             polygon.push(
                 *polygon
                     .first()
-                    .expect("can not get first element of polygon"),
+                    .expect("cannot get first element of polygon"),
             );
         }
         if polygon.len() > 2 {

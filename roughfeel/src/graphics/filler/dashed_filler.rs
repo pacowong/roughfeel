@@ -1,7 +1,7 @@
 use std::borrow::BorrowMut;
 use std::marker::PhantomData;
 
-use nalgebra::{Point2, Scalar, Vector};
+use nalgebra::Point2;
 use nalgebra_glm::RealNumber;
 
 use super::scan_line_hachure::polygon_hachure_lines;

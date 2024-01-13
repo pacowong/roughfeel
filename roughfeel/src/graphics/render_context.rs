@@ -7,7 +7,6 @@ use nalgebra_glm::RealNumber;
 use super::drawable_ops::OpSet;
 
 use super::drawable::{DrawOptions, Drawable};
-use super::renderer;
 
 /*
 struct RoughRenderContext {}
