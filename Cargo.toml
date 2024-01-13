@@ -1,8 +1,7 @@
 [workspace]
 
 members = [
-    "roughfeel",
-    "rough_piet",
+    "roughfeel"
 ]
 
 resolver = "1"
